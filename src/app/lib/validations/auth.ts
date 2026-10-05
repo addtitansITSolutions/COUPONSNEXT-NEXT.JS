@@ -2,10 +2,10 @@ import { z } from "zod";
 
 export const loginSchema = z.object({
   email: z
-    .string()
-    .trim()
-    .email("Please enter a valid email address")
-    .transform((value) => value.toLowerCase()),
+  .string()
+  .trim()
+  .pipe(z.email("Please enter a valid email address"))
+  .transform((val) => val.toLowerCase()),
 
   password: z
     .string()
@@ -31,10 +31,10 @@ export const signupSchema = z.object({
     .max(100, "Name is too long"),
 
   email: z
-    .string()
-    .trim()
-    .email("Please enter a valid email address")
-    .transform((value) => value.toLowerCase()),
+  .string()
+  .trim()
+  .pipe(z.email("Please enter a valid email address"))
+  .transform((val) => val.toLowerCase()),
 
   password: z
     .string()
