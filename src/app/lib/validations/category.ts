@@ -1,11 +1,21 @@
 import { z } from "zod";
 
-const categoryTypeSchema = z.enum(
-  ["store", "coupon", "both"],
+const categoryContentTypeSchema = z.enum(
+  ["store", "coupon", "blog"],
   {
-    error: "Category type must be store, coupon, or both",
+    error: "Content type must be store, coupon, or blog",
   }
 );
+
+const categoryContentTypesSchema = z
+  .array(categoryContentTypeSchema, {
+    error: "Content types must be an array",
+  })
+  .min(1, "At least one content type is required")
+  .refine(
+    (types) => new Set(types).size === types.length,
+    "Content types cannot contain duplicates"
+  );
 
 export const createCategorySchema = z.object({
   name: z
@@ -44,7 +54,11 @@ export const createCategorySchema = z.object({
     .max(2000, "Image URL is too long")
     .optional(),
 
-  type: categoryTypeSchema.default("both"),
+  contentTypes: categoryContentTypesSchema.default([
+    "store",
+    "coupon",
+    "blog",
+  ]),
 
   isActive: z
     .boolean({
@@ -67,17 +81,23 @@ export const createCategorySchema = z.object({
     .default(0),
 });
 
-export type CreateCategoryInput = z.infer< typeof createCategorySchema >;
+export type CreateCategoryInput = z.infer<
+  typeof createCategorySchema
+>;
 
 
 
 
 
 
+export const updateCategorySchema =
+  createCategorySchema.partial();
 
-export const updateCategorySchema = createCategorySchema.partial();
+export type UpdateCategoryInput = z.infer<
+  typeof updateCategorySchema
+>;
 
-export type UpdateCategoryInput = z.infer< typeof updateCategorySchema >;
+
 
 
 
@@ -113,7 +133,7 @@ export const categoryQuerySchema = z.object({
     .max(100, "Search term cannot exceed 100 characters")
     .optional(),
 
-  type: categoryTypeSchema.optional(),
+  contentType: categoryContentTypeSchema.optional(),
 
   isActive: z
     .enum(["true", "false"], {

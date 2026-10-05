@@ -1,13 +1,13 @@
 import mongoose, { Schema, models, model } from "mongoose";
 
-export type CategoryType = "store" | "coupon" | "both";
+export type CategoryContentType = "store" | "coupon" | "blog";
 
 export interface ICategory {
   name: string;
   slug: string;
   description?: string;
   image?: string;
-  type: CategoryType;
+  contentTypes: CategoryContentType[];
   isActive: boolean;
   isFeatured: boolean;
   sortOrder: number;
@@ -44,11 +44,19 @@ const CategorySchema = new Schema<ICategory>(
       trim: true,
     },
 
-    type: {
-      type: String,
-      enum: ["store", "coupon", "both"],
-      default: "both",
+    contentTypes: {
+      type: [
+        {
+          type: String,
+          enum: ["store", "coupon", "blog"],
+        },
+      ],
+      default: ["store", "coupon", "blog"],
       required: true,
+      validate: {
+        validator: (value: string[]) => value.length > 0,
+        message: "At least one category content type is required",
+      },
     },
 
     isActive: {
@@ -89,9 +97,9 @@ CategorySchema.index({
   sortOrder: 1,
 });
 
-// Category filtering by type
+// Category filtering by content type
 CategorySchema.index({
-  type: 1,
+  contentTypes: 1,
   isActive: 1,
   sortOrder: 1,
 });

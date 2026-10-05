@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+
 import { connectDB } from "@/lib/mongodb";
 import { requireAdmin } from "@/lib/auth-guards";
-import { createCategorySchema , categoryQuerySchema } from "@/lib/validations/category";
+import {
+  createCategorySchema,
+  categoryQuerySchema,
+} from "@/lib/validations/category";
 import { handleApiError } from "@/lib/errors/handleApiError";
 import Category from "@/models/Category";
 
@@ -35,7 +39,7 @@ export async function POST(request: NextRequest) {
           slug: category.slug,
           description: category.description,
           image: category.image,
-          type: category.type,
+          contentTypes: category.contentTypes,
           isActive: category.isActive,
           isFeatured: category.isFeatured,
           sortOrder: category.sortOrder,
@@ -55,7 +59,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
-
 export async function GET(request: NextRequest) {
   try {
     await requireAdmin();
@@ -74,7 +77,7 @@ export async function GET(request: NextRequest) {
       page,
       limit,
       search,
-      type,
+      contentType,
       isActive,
       isFeatured,
     } = query.data;
@@ -90,8 +93,8 @@ export async function GET(request: NextRequest) {
       };
     }
 
-    if (type) {
-      filter.type = type;
+    if (contentType) {
+      filter.contentTypes = contentType;
     }
 
     if (isActive !== undefined) {
@@ -128,7 +131,7 @@ export async function GET(request: NextRequest) {
           slug: category.slug,
           description: category.description,
           image: category.image,
-          type: category.type,
+          contentTypes: category.contentTypes,
           isActive: category.isActive,
           isFeatured: category.isFeatured,
           sortOrder: category.sortOrder,
