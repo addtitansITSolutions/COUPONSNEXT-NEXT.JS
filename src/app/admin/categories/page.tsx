@@ -8,9 +8,7 @@ import {
 } from "lucide-react";
 import CategoryDeleteModal from "@/components/admin/categories/CategoryDeleteModal";
 
-import CategoryTable, {
-  type Category,
-} from "@/components/admin/categories/CategoryTable";
+import CategoryTable, { type Category, } from "@/components/admin/categories/CategoryTable";
 
 import CategoryTableSkeleton from "@/components/admin/categories/CategoryTableSkeleton";
 
