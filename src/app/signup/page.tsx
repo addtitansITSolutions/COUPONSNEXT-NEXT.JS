@@ -7,23 +7,27 @@ import {
   Loader2,
   LockKeyhole,
   Mail,
+  User,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { getApiErrorMessageOnUi } from "@/lib/errors/getApiErrorMessageOnUi";
 import { toast } from "@/components/ui/toast/toast";
 
-export default function LoginPage() {
+export default function SignupPage() {
   const router = useRouter();
   const { login } = useAuth();
 
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const [showPassword, setShowPassword] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
 
   const clearErrors = () => {
@@ -33,17 +37,13 @@ export default function LoginPage() {
   };
 
   const handleSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
-  //   console.log("FORM HANDLER FIRED");
-  // console.log("defaultPrevented BEFORE:", event.defaultPrevented);
-
-  event.preventDefault();
-
-  // console.log("defaultPrevented AFTER:", event.defaultPrevented);
+    event.preventDefault();
 
     if (isSubmitting) return;
 
     setErrors([]);
 
+    const trimmedName = name.trim();
     const trimmedEmail = email.trim();
 
     // --------------------------------
@@ -52,12 +52,26 @@ export default function LoginPage() {
 
     const validationErrors: string[] = [];
 
+    if (!trimmedName) {
+      validationErrors.push("Please enter your name.");
+    } else if (trimmedName.length < 2) {
+      validationErrors.push("Name must be at least 2 characters.");
+    }
+
     if (!trimmedEmail) {
       validationErrors.push("Please enter your email address.");
     }
 
     if (!password) {
-      validationErrors.push("Please enter your password.");
+      validationErrors.push("Please enter a password.");
+    } else if (password.length < 8) {
+      validationErrors.push("Password must be at least 8 characters.");
+    }
+
+    if (!confirmPassword) {
+      validationErrors.push("Please confirm your password.");
+    } else if (password !== confirmPassword) {
+      validationErrors.push("Passwords do not match.");
     }
 
     if (validationErrors.length > 0) {
@@ -68,12 +82,33 @@ export default function LoginPage() {
     setIsSubmitting(true);
 
     try {
-      const result = await login(trimmedEmail, password);
+      // --------------------------------
+      // Create account
+      // --------------------------------
 
-      if (!result.success) {
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          name: trimmedName,
+          email: trimmedEmail,
+          password,
+        }),
+      });
+
+      const data = await response.json();
+
+      // --------------------------------
+      // API error
+      // --------------------------------
+
+      if (!response.ok) {
         const apiError = getApiErrorMessageOnUi(
-          result,
-          "Unable to log in. Please try again."
+          data,
+          "Unable to create your account. Please try again."
         );
 
         setErrors(
@@ -87,23 +122,45 @@ export default function LoginPage() {
       }
 
       // --------------------------------
+      // Unexpected success response
+      // --------------------------------
+
+      if (!data.success || !data.user) {
+        setErrors([
+          "Unable to create your account. Please try again.",
+        ]);
+
+        return;
+      }
+
+      // --------------------------------
+      // Automatically log the user in
+      // --------------------------------
+
+      const loginResult = await login(trimmedEmail, password);
+
+      if (!loginResult.success) {
+        router.push("/login");
+        return;
+      }
+
+      // --------------------------------
       // Redirect based on role
       // --------------------------------
 
-      if (result.user?.role === "admin") {
+      if (loginResult.user?.role === "admin") {
         router.push("/admin");
       } else {
         router.push("/");
       }
 
-      toast.success("Logged in successfully");
+      toast.success("Account created successfully");
 
       router.refresh();
     } catch {
       setErrors([
         "Something went wrong. Please check your connection and try again.",
       ]);
-      toast.error("Something went wrong. Please check your connection and try again." );
     } finally {
       setIsSubmitting(false);
     }
@@ -123,8 +180,12 @@ export default function LoginPage() {
               <span className="text-[var(--brand-yellow)]">Next</span>
             </Link>
 
+            {/* <h1 className="mt-6 text-2xl font-bold text-[var(--brand-navy)]">
+              Create your account
+            </h1> */}
+
             <p className="mt-2 text-sm text-[var(--brand-navy)]/55">
-              Log in to your CouponsNext account
+              Create your account
             </p>
           </div>
 
@@ -144,6 +205,38 @@ export default function LoginPage() {
                   </ul>
                 </div>
               )}
+
+              {/* Name */}
+              <div>
+                <label
+                  htmlFor="name"
+                  className="mb-2 block text-sm font-semibold text-[var(--brand-navy)]"
+                >
+                  Full name
+                </label>
+
+                <div className="relative">
+                  <User
+                    size={18}
+                    className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--brand-navy)]/35"
+                  />
+
+                  <input
+                    id="name"
+                    name="name"
+                    type="text"
+                    autoComplete="name"
+                    value={name}
+                    onChange={(event) => {
+                      setName(event.target.value);
+                      clearErrors();
+                    }}
+                    placeholder="Your name"
+                    disabled={isSubmitting}
+                    className="h-12 w-full rounded-xl border border-[var(--border)] bg-white pl-11 pr-4 text-sm text-[var(--brand-navy)] outline-none transition placeholder:text-[var(--brand-navy)]/30 focus:border-[var(--brand-purple)] focus:ring-3 focus:ring-[var(--brand-purple)]/10 disabled:cursor-not-allowed disabled:bg-gray-50"
+                  />
+                </div>
+              </div>
 
               {/* Email */}
               <div>
@@ -196,13 +289,13 @@ export default function LoginPage() {
                     id="password"
                     name="password"
                     type={showPassword ? "text" : "password"}
-                    autoComplete="current-password"
+                    autoComplete="new-password"
                     value={password}
                     onChange={(event) => {
                       setPassword(event.target.value);
                       clearErrors();
                     }}
-                    placeholder="Enter your password"
+                    placeholder="At least 8 characters"
                     disabled={isSubmitting}
                     className="h-12 w-full rounded-xl border border-[var(--border)] bg-white pl-11 pr-12 text-sm text-[var(--brand-navy)] outline-none transition placeholder:text-[var(--brand-navy)]/30 focus:border-[var(--brand-purple)] focus:ring-3 focus:ring-[var(--brand-purple)]/10 disabled:cursor-not-allowed disabled:bg-gray-50"
                   />
@@ -214,13 +307,63 @@ export default function LoginPage() {
                     }
                     disabled={isSubmitting}
                     aria-label={
-                      showPassword
+                      showPassword ? "Hide password" : "Show password"
+                    }
+                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-[var(--brand-navy)]/40 transition hover:text-[var(--brand-purple)] disabled:cursor-not-allowed"
+                  >
+                    {showPassword ? (
+                      <EyeOff size={18} />
+                    ) : (
+                      <Eye size={18} />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Confirm Password */}
+              <div>
+                <label
+                  htmlFor="confirmPassword"
+                  className="mb-2 block text-sm font-semibold text-[var(--brand-navy)]"
+                >
+                  Confirm password
+                </label>
+
+                <div className="relative">
+                  <LockKeyhole
+                    size={18}
+                    className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--brand-navy)]/35"
+                  />
+
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    autoComplete="new-password"
+                    value={confirmPassword}
+                    onChange={(event) => {
+                      setConfirmPassword(event.target.value);
+                      clearErrors();
+                    }}
+                    placeholder="Enter your password again"
+                    disabled={isSubmitting}
+                    className="h-12 w-full rounded-xl border border-[var(--border)] bg-white pl-11 pr-12 text-sm text-[var(--brand-navy)] outline-none transition placeholder:text-[var(--brand-navy)]/30 focus:border-[var(--brand-purple)] focus:ring-3 focus:ring-[var(--brand-purple)]/10 disabled:cursor-not-allowed disabled:bg-gray-50"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setShowConfirmPassword((current) => !current)
+                    }
+                    disabled={isSubmitting}
+                    aria-label={
+                      showConfirmPassword
                         ? "Hide password"
                         : "Show password"
                     }
                     className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-[var(--brand-navy)]/40 transition hover:text-[var(--brand-purple)] disabled:cursor-not-allowed"
                   >
-                    {showPassword ? (
+                    {showConfirmPassword ? (
                       <EyeOff size={18} />
                     ) : (
                       <Eye size={18} />
@@ -238,23 +381,23 @@ export default function LoginPage() {
                 {isSubmitting ? (
                   <>
                     <Loader2 size={18} className="animate-spin" />
-                    Logging in...
+                    Creating account...
                   </>
                 ) : (
-                  "Log in"
+                  "Create account"
                 )}
               </button>
             </form>
 
-            {/* Signup */}
+            {/* Login */}
             <div className="mt-6 border-t border-[var(--border)] pt-6 text-center">
               <p className="text-sm text-[var(--brand-navy)]/55">
-                Don't have an account?{" "}
+                Already have an account?{" "}
                 <Link
-                  href="/signup"
+                  href="/login"
                   className="font-semibold text-[var(--brand-purple)] transition hover:underline"
                 >
-                  Create account
+                  Log in
                 </Link>
               </p>
             </div>

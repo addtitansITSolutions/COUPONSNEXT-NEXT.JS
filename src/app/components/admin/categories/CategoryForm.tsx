@@ -4,169 +4,182 @@ import { useEffect, useState } from "react";
 import {
   ArrowLeft,
   Check,
+  FileText,
   Loader2,
   Save,
+  Tag,
 } from "lucide-react";
 
-import type { Category } from "./CategoryTable";
+import { toast } from "@/components/ui/toast/toast";
+import { getApiErrorMessageOnUi } from "@/lib/errors/getApiErrorMessageOnUi";
+import type { Category } from "@/components/admin/categories/CategoryTable";
 
-type CategoryFormProps = {
-  category?: Category;
-  mode?: "create" | "edit";
+type CategoryFormBaseProps = {
   onCancel: () => void;
-  onCreated?: (category: Category) => void;
-  onUpdated?: (category: Category) => void;
 };
 
-type ContentType = "store" | "coupon" | "blog";
+type CategoryFormCreateProps = CategoryFormBaseProps & {
+  mode: "create";
+  category?: null;
+  onCreated: (category: Category) => void;
+  onUpdated?: never;
+};
+
+type CategoryFormEditProps = CategoryFormBaseProps & {
+  mode: "edit";
+  category: Category;
+  onCreated?: never;
+  onUpdated: (category: Category) => void;
+};
+
+type CategoryFormProps = | CategoryFormCreateProps | CategoryFormEditProps;
 
 type FormState = {
   name: string;
   slug: string;
   description: string;
-  image: string;
-  contentTypes: ContentType[];
+  contentTypes: string[];
   isActive: boolean;
   isFeatured: boolean;
   sortOrder: number;
 };
 
-const emptyForm: FormState = {
-  name: "",
-  slug: "",
-  description: "",
-  image: "",
-  contentTypes: ["store", "coupon", "blog"],
-  isActive: true,
-  isFeatured: false,
-  sortOrder: 0,
+type FormErrors = {
+  name?: string;
+  slug?: string;
+  description?: string;
+  contentTypes?: string;
+  sortOrder?: string;
+  form?: string;
 };
 
-export default function CategoryForm({
-  category,
-  mode = "create",
-  onCancel,
-  onCreated,
-  onUpdated,
-}: CategoryFormProps) {
+const CONTENT_TYPES = [
+  {
+    value: "store",
+    label: "Store",
+  },
+  {
+    value: "coupon",
+    label: "Coupon",
+  },
+  {
+    value: "blog",
+    label: "Blog",
+  },
+];
+
+function createSlug(value: string) {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
+}
+
+export default function CategoryForm({ mode, category, onCancel, onCreated, onUpdated }: CategoryFormProps) {
   const isEditMode = mode === "edit";
-
-  const [form, setForm] = useState<FormState>(emptyForm);
-
-  const [errors, setErrors] = useState<Record<string, string>>({});
-
+  const [form, setForm] = useState<FormState>({
+    name: "",
+    slug: "",
+    description: "",
+    contentTypes: ["store", "coupon", "blog"],
+    isActive: true,
+    isFeatured: false,
+    sortOrder: 0,
+  });
+  const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(false);
 
   useEffect(() => {
     if (isEditMode && category) {
-      setForm({
-        name: category.name,
-        slug: category.slug,
+      setForm({ name: category.name || "",
+        slug: category.slug || "",
         description: category.description || "",
-        image: category.image || "",
-        contentTypes: [...category.contentTypes],
+        contentTypes: category.contentTypes || [],
         isActive: category.isActive,
         isFeatured: category.isFeatured,
-        sortOrder: category.sortOrder,
+        sortOrder: category.sortOrder ?? 0,
       });
-    } else {
-      setForm(emptyForm);
+
+      setIsSlugManuallyEdited(true);
     }
-
-    setErrors({});
-  }, [category, isEditMode]);
-
-  const generateSlug = (value: string) => {
-    return value
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9\s-]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-");
-  };
+  }, [isEditMode, category]);
 
   const handleNameChange = (value: string) => {
     setForm((current) => ({
       ...current,
       name: value,
-      slug: generateSlug(value),
+      slug: isSlugManuallyEdited ? current.slug : createSlug(value),
     }));
 
-    if (errors.name) {
-      setErrors((current) => ({
-        ...current,
-        name: "",
-      }));
-    }
+    setErrors((current) => ({
+      ...current,
+      name: undefined,
+      slug: undefined,
+    }));
   };
 
   const handleSlugChange = (value: string) => {
+    const sanitizedSlug = value
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, "")
+      .replace(/-+/g, "-");
+
+    setIsSlugManuallyEdited(true);
+
     setForm((current) => ({
       ...current,
-      slug: generateSlug(value),
+      slug: sanitizedSlug,
     }));
 
-    if (errors.slug) {
-      setErrors((current) => ({
-        ...current,
-        slug: "",
-      }));
-    }
+    setErrors((current) => ({
+      ...current,
+      slug: undefined,
+    }));
   };
 
-  const toggleContentType = (type: ContentType) => {
+  const handleContentTypeToggle = (type: string) => {
     setForm((current) => {
       const exists = current.contentTypes.includes(type);
 
-      if (exists) {
-        if (current.contentTypes.length === 1) {
-          return current;
-        }
-
-        return {
-          ...current,
-          contentTypes: current.contentTypes.filter(
-            (item) => item !== type
-          ),
-        };
-      }
-
       return {
         ...current,
-        contentTypes: [...current.contentTypes, type],
+        contentTypes: exists
+          ? current.contentTypes.filter(
+              (item) => item !== type
+            )
+          : [...current.contentTypes, type],
       };
     });
 
-    if (errors.contentTypes) {
-      setErrors((current) => ({
-        ...current,
-        contentTypes: "",
-      }));
-    }
+    setErrors((current) => ({
+      ...current,
+      contentTypes: undefined,
+    }));
   };
 
-  const validate = () => {
-    const nextErrors: Record<string, string> = {};
+  const validateForm = () => {
+    const nextErrors: FormErrors = {};
 
     if (!form.name.trim()) {
       nextErrors.name = "Category name is required";
     } else if (form.name.trim().length > 100) {
-      nextErrors.name =
-        "Category name cannot exceed 100 characters";
+      nextErrors.name = "Category name is too long";
     }
 
     if (!form.slug.trim()) {
       nextErrors.slug = "Category slug is required";
     } else if (
-      !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(form.slug)
+      !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(form.slug.trim())
     ) {
       nextErrors.slug =
-        "Use lowercase letters, numbers, and hyphens only";
+        "Slug can only contain lowercase letters, numbers, and hyphens";
     }
 
-    if (form.description.length > 1000) {
-      nextErrors.description =
-        "Description cannot exceed 1000 characters";
+    if (form.description.trim().length > 1000) {
+      nextErrors.description = "Description is too long";
     }
 
     if (form.contentTypes.length === 0) {
@@ -174,9 +187,12 @@ export default function CategoryForm({
         "Select at least one content type";
     }
 
-    if (form.sortOrder < 0) {
+    if (
+      !Number.isInteger(form.sortOrder) ||
+      form.sortOrder < 0
+    ) {
       nextErrors.sortOrder =
-        "Sort order cannot be negative";
+        "Sort order must be a whole number greater than or equal to 0";
     }
 
     setErrors(nextErrors);
@@ -184,116 +200,181 @@ export default function CategoryForm({
     return Object.keys(nextErrors).length === 0;
   };
 
-  const handleSubmit = async (
-    event: React.FormEvent<HTMLFormElement>
-  ) => {
+  const handleSubmit = async ( event: React.SubmitEvent<HTMLFormElement> ) => {
     event.preventDefault();
 
-    if (!validate()) {
+    if (isSubmitting) {
+      return;
+    }
+
+    if (!validateForm()) {
       return;
     }
 
     setIsSubmitting(true);
 
+    setErrors({});
+
+    const payload = {
+      name: form.name.trim(),
+      slug: form.slug.trim(),
+      description: form.description.trim(),
+      contentTypes: form.contentTypes,
+      isActive: form.isActive,
+      isFeatured: form.isFeatured,
+      sortOrder: form.sortOrder,
+    };
+
     try {
-      // Dummy API delay for now.
-      await new Promise((resolve) =>
-        setTimeout(resolve, 1200)
-      );
+      const url = isEditMode && category ? `/api/admin/categories/${category.id}` : "/api/admin/categories";
+      const method = isEditMode ? "PATCH" : "POST";
+      const response = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
 
-      const now = new Date().toISOString();
+      const data = await response.json();
 
-      if (isEditMode && category) {
-        const updatedCategory: Category = {
-          ...category,
-          name: form.name.trim(),
-          slug: form.slug.trim(),
-          description: form.description.trim(),
-          image: form.image.trim(),
-          contentTypes: form.contentTypes,
-          isActive: form.isActive,
-          isFeatured: form.isFeatured,
-          sortOrder: form.sortOrder,
-          updatedAt: now,
-        };
+      if (!response.ok) {
+        const message = getApiErrorMessageOnUi(
+          data,
+          isEditMode ? "Unable to update category." : "Unable to create category."
+        );
 
-        onUpdated?.(updatedCategory);
+        const fieldErrors: FormErrors = {};
+
+        if (
+          data.details &&
+          typeof data.details === "object"
+        ) {
+          if (Array.isArray(data.details.name)) {
+            fieldErrors.name = data.details.name[0];
+          }
+
+          if (Array.isArray(data.details.slug)) {
+            fieldErrors.slug = data.details.slug[0];
+          }
+
+          if (Array.isArray(data.details.description)) {
+            fieldErrors.description =
+              data.details.description[0];
+          }
+
+          if (Array.isArray(data.details.contentTypes)) {
+            fieldErrors.contentTypes =
+              data.details.contentTypes[0];
+          }
+
+          if (Array.isArray(data.details.sortOrder)) {
+            fieldErrors.sortOrder =
+              data.details.sortOrder[0];
+          }
+        }
+
+        fieldErrors.form = message;
+
+        setErrors(fieldErrors);
+        toast.error(message);
 
         return;
       }
 
-      const newCategory: Category = {
-        id: crypto.randomUUID(),
-        name: form.name.trim(),
-        slug: form.slug.trim(),
-        description: form.description.trim(),
-        image: form.image.trim(),
-        contentTypes: form.contentTypes,
-        isActive: form.isActive,
-        isFeatured: form.isFeatured,
-        sortOrder: form.sortOrder,
-        createdAt: now,
-        updatedAt: now,
-      };
+      if (!data.success || !data.category) {
+        const message = isEditMode ? "Category could not be updated." : "Category could not be created.";
 
-      onCreated?.(newCategory);
+        setErrors({
+          form: message,
+        });
+
+        toast.error(message);
+
+        return;
+      }
+
+      if (isEditMode) {
+        toast.success( data.message || "Category updated successfully" );
+        onUpdated(data.category);
+      } else {
+        toast.success( data.message || "Category created successfully" );
+        onCreated(data.category);
+      }
     } catch {
-      setErrors({
-        form: `Something went wrong while ${
-          isEditMode ? "updating" : "creating"
-        } the category. Please try again.`,
-      });
+      const message = "Something went wrong. Please check your connection and try again.";
+      setErrors({ form: message, });
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="rounded-2xl border border-[var(--border)] bg-white shadow-sm">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="border-b border-[var(--border)] px-5 py-5 sm:px-6">
-        <button
-          type="button"
-          onClick={onCancel}
-          disabled={isSubmitting}
-          className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-[var(--brand-navy)]/55 transition hover:text-[var(--brand-purple)] disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <ArrowLeft size={17} />
-          Back to Categories
-        </button>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={isSubmitting}
+            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--border)] bg-white text-[var(--brand-navy)]/65 transition hover:border-[var(--brand-purple)] hover:bg-[var(--accent-light)] hover:text-[var(--brand-purple)] disabled:cursor-not-allowed disabled:opacity-60"
+            aria-label="Back"
+          >
+            <ArrowLeft size={18} />
+          </button>
 
-        <h1 className="text-xl font-bold text-[var(--brand-navy)] sm:text-2xl">
-          {isEditMode ? "Edit Category" : "Add Category"}
-        </h1>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-[var(--brand-navy)]">
+              {isEditMode
+                ? "Edit Category"
+                : "Add Category"}
+            </h1>
 
-        <p className="mt-1 text-sm text-[var(--brand-navy)]/55">
-          {isEditMode
-            ? `Update the details for ${category?.name || "this category"}.`
-            : "Create a category and choose where it can be used across CouponsNext."}
-        </p>
+            <p className="mt-1 text-sm text-[var(--brand-navy)]/55">
+              {isEditMode
+                ? "Update category details and settings."
+                : "Create a new category for stores, coupons, or blogs."}
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit}>
-        <div className="space-y-6 p-5 sm:p-6 lg:p-7">
-          {/* Form Error */}
-          {errors.form && (
-            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+      <form
+        onSubmit={handleSubmit}
+        className="overflow-hidden rounded-2xl border border-[var(--border)] bg-white shadow-sm"
+      >
+        {/* Form error */}
+        {errors.form && (
+          <div className="border-b border-red-100 bg-red-50 px-5 py-4">
+            <p className="text-sm font-medium text-red-700">
               {errors.form}
-            </div>
-          )}
-
-          {/* Basic Information */}
-          <section>
-            <h2 className="text-sm font-semibold text-[var(--brand-navy)]">
-              Basic Information
-            </h2>
-
-            <p className="mt-1 text-xs text-[var(--brand-navy)]/45">
-              Basic details used to identify the category.
             </p>
+          </div>
+        )}
 
-            <div className="mt-5 grid gap-5 md:grid-cols-2">
+        <div className="space-y-8 p-5 sm:p-6 lg:p-8">
+          {/* Basic information */}
+          <div>
+            <div className="mb-5 flex items-center gap-2">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--accent-light)] text-[var(--brand-purple)]">
+                <Tag size={18} />
+              </div>
+
+              <div>
+                <h2 className="text-base font-semibold text-[var(--brand-navy)]">
+                  Basic Information
+                </h2>
+                <p className="text-xs text-[var(--brand-navy)]/50">
+                  Define the category name and URL.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid gap-5 md:grid-cols-2">
               {/* Name */}
               <div>
                 <label
@@ -301,23 +382,25 @@ export default function CategoryForm({
                   className="mb-2 block text-sm font-medium text-[var(--brand-navy)]"
                 >
                   Category Name
-                  <span className="ml-1 text-red-500">*</span>
+                  <span className="ml-1 text-red-500">
+                    *
+                  </span>
                 </label>
 
                 <input
                   id="category-name"
                   type="text"
                   value={form.name}
-                  onChange={(e) =>
-                    handleNameChange(e.target.value)
+                  onChange={(event) =>
+                    handleNameChange(event.target.value)
                   }
-                  disabled={isSubmitting}
                   placeholder="e.g. Electronics"
-                  className={`w-full rounded-xl border bg-white px-3.5 py-2.5 text-sm text-[var(--brand-navy)] outline-none transition placeholder:text-[var(--brand-navy)]/30 ${
+                  disabled={isSubmitting}
+                  className={`h-11 w-full rounded-xl border bg-white px-3.5 text-sm text-[var(--brand-navy)] outline-none transition placeholder:text-[var(--brand-navy)]/35 focus:ring-2 disabled:cursor-not-allowed disabled:opacity-60 ${
                     errors.name
-                      ? "border-red-300 focus:border-red-400"
-                      : "border-[var(--border)] focus:border-[var(--brand-purple)]"
-                  } disabled:cursor-not-allowed disabled:bg-gray-50`}
+                      ? "border-red-300 focus:border-red-400 focus:ring-red-100"
+                      : "border-[var(--border)] focus:border-[var(--brand-purple)] focus:ring-[var(--brand-purple)]/10"
+                  }`}
                 />
 
                 {errors.name && (
@@ -334,141 +417,109 @@ export default function CategoryForm({
                   className="mb-2 block text-sm font-medium text-[var(--brand-navy)]"
                 >
                   Slug
-                  <span className="ml-1 text-red-500">*</span>
-                </label>
-
-                <div className="flex">
-                  <span className="flex items-center rounded-l-xl border border-r-0 border-[var(--border)] bg-[var(--background)] px-3 text-sm text-[var(--brand-navy)]/40">
-                    /
+                  <span className="ml-1 text-red-500">
+                    *
                   </span>
-
-                  <input
-                    id="category-slug"
-                    type="text"
-                    value={form.slug}
-                    onChange={(e) =>
-                      handleSlugChange(e.target.value)
-                    }
-                    disabled={isSubmitting}
-                    placeholder="electronics"
-                    className={`min-w-0 flex-1 rounded-r-xl border bg-white px-3.5 py-2.5 text-sm text-[var(--brand-navy)] outline-none transition placeholder:text-[var(--brand-navy)]/30 ${
-                      errors.slug
-                        ? "border-red-300 focus:border-red-400"
-                        : "border-[var(--border)] focus:border-[var(--brand-purple)]"
-                    } disabled:cursor-not-allowed disabled:bg-gray-50`}
-                  />
-                </div>
-
-                {errors.slug && (
-                  <p className="mt-1.5 text-xs text-red-600">
-                    {errors.slug}
-                  </p>
-                )}
-              </div>
-
-              {/* Description */}
-              <div className="md:col-span-2">
-                <label
-                  htmlFor="category-description"
-                  className="mb-2 block text-sm font-medium text-[var(--brand-navy)]"
-                >
-                  Description
-                </label>
-
-                <textarea
-                  id="category-description"
-                  value={form.description}
-                  onChange={(e) =>
-                    setForm((current) => ({
-                      ...current,
-                      description: e.target.value,
-                    }))
-                  }
-                  disabled={isSubmitting}
-                  rows={4}
-                  placeholder="Briefly describe this category..."
-                  className={`w-full resize-none rounded-xl border bg-white px-3.5 py-3 text-sm text-[var(--brand-navy)] outline-none transition placeholder:text-[var(--brand-navy)]/30 focus:border-[var(--brand-purple)] disabled:cursor-not-allowed disabled:bg-gray-50 ${
-                    errors.description
-                      ? "border-red-300"
-                      : "border-[var(--border)]"
-                  }`}
-                />
-
-                <div className="mt-1.5 flex justify-between">
-                  {errors.description ? (
-                    <p className="text-xs text-red-600">
-                      {errors.description}
-                    </p>
-                  ) : (
-                    <span />
-                  )}
-
-                  <span className="text-xs text-[var(--brand-navy)]/35">
-                    {form.description.length}/1000
-                  </span>
-                </div>
-              </div>
-
-              {/* Image */}
-              <div className="md:col-span-2">
-                <label
-                  htmlFor="category-image"
-                  className="mb-2 block text-sm font-medium text-[var(--brand-navy)]"
-                >
-                  Image URL
                 </label>
 
                 <input
-                  id="category-image"
-                  type="url"
-                  value={form.image}
-                  onChange={(e) =>
-                    setForm((current) => ({
-                      ...current,
-                      image: e.target.value,
-                    }))
+                  id="category-slug"
+                  type="text"
+                  value={form.slug}
+                  onChange={(event) =>
+                    handleSlugChange(event.target.value)
                   }
+                  placeholder="e.g. electronics"
                   disabled={isSubmitting}
-                  placeholder="https://example.com/category-image.jpg"
-                  className="w-full rounded-xl border border-[var(--border)] bg-white px-3.5 py-2.5 text-sm text-[var(--brand-navy)] outline-none transition placeholder:text-[var(--brand-navy)]/30 focus:border-[var(--brand-purple)] disabled:cursor-not-allowed disabled:bg-gray-50"
+                  className={`h-11 w-full rounded-xl border bg-white px-3.5 text-sm text-[var(--brand-navy)] outline-none transition placeholder:text-[var(--brand-navy)]/35 focus:ring-2 disabled:cursor-not-allowed disabled:opacity-60 ${
+                    errors.slug
+                      ? "border-red-300 focus:border-red-400 focus:ring-red-100"
+                      : "border-[var(--border)] focus:border-[var(--brand-purple)] focus:ring-[var(--brand-purple)]/10"
+                  }`}
                 />
 
-                <p className="mt-1.5 text-xs text-[var(--brand-navy)]/40">
-                  We will connect this to the actual image upload system later.
+                {errors.slug ? (
+                  <p className="mt-1.5 text-xs text-red-600">
+                    {errors.slug}
+                  </p>
+                ) : (
+                  <p className="mt-1.5 text-xs text-[var(--brand-navy)]/40">
+                    Lowercase letters, numbers, and hyphens only.
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Description */}
+            <div className="mt-5">
+              <label
+                htmlFor="category-description"
+                className="mb-2 block text-sm font-medium text-[var(--brand-navy)]"
+              >
+                Description
+              </label>
+
+              <textarea
+                id="category-description"
+                value={form.description}
+                onChange={(event) => {
+                  setForm((current) => ({
+                    ...current,
+                    description: event.target.value,
+                  }));
+
+                  setErrors((current) => ({
+                    ...current,
+                    description: undefined,
+                  }));
+                }}
+                placeholder="Briefly describe this category..."
+                rows={4}
+                disabled={isSubmitting}
+                className={`w-full resize-none rounded-xl border bg-white px-3.5 py-3 text-sm text-[var(--brand-navy)] outline-none transition placeholder:text-[var(--brand-navy)]/35 focus:ring-2 disabled:cursor-not-allowed disabled:opacity-60 ${
+                  errors.description
+                    ? "border-red-300 focus:border-red-400 focus:ring-red-100"
+                    : "border-[var(--border)] focus:border-[var(--brand-purple)] focus:ring-[var(--brand-purple)]/10"
+                }`}
+              />
+
+              <div className="mt-1.5 flex justify-between">
+                {errors.description ? (
+                  <p className="text-xs text-red-600">
+                    {errors.description}
+                  </p>
+                ) : (
+                  <span />
+                )}
+
+                <span className="text-xs text-[var(--brand-navy)]/35">
+                  {form.description.length}/1000
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Content types */}
+          <div className="border-t border-[var(--border)] pt-8">
+            <div className="mb-5 flex items-center gap-2">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--accent-light)] text-[var(--brand-purple)]">
+                <FileText size={18} />
+              </div>
+
+              <div>
+                <h2 className="text-base font-semibold text-[var(--brand-navy)]">
+                  Content Types
+                </h2>
+
+                <p className="text-xs text-[var(--brand-navy)]/50">
+                  Choose where this category can be used.
                 </p>
               </div>
             </div>
-          </section>
 
-          {/* Content Types */}
-          <section className="border-t border-[var(--border)] pt-6">
-            <h2 className="text-sm font-semibold text-[var(--brand-navy)]">
-              Content Types
-            </h2>
-
-            <p className="mt-1 text-xs text-[var(--brand-navy)]/45">
-              Choose which parts of the website can use this category.
-            </p>
-
-            <div className="mt-4 grid gap-3 sm:grid-cols-3">
-              {[
-                {
-                  value: "store" as const,
-                  label: "Stores",
-                  description: "Store listings",
-                },
-                {
-                  value: "coupon" as const,
-                  label: "Coupons",
-                  description: "Coupon & deal listings",
-                },
-                {
-                  value: "blog" as const,
-                  label: "Blogs",
-                  description: "Blog articles",
-                },
-              ].map((type) => {
-                const selected =
+            <div className="grid gap-3 sm:grid-cols-3">
+              {CONTENT_TYPES.map((type) => {
+                const isSelected =
                   form.contentTypes.includes(type.value);
 
                 return (
@@ -476,41 +527,34 @@ export default function CategoryForm({
                     key={type.value}
                     type="button"
                     onClick={() =>
-                      toggleContentType(type.value)
+                      handleContentTypeToggle(type.value)
                     }
                     disabled={isSubmitting}
-                    className={`rounded-xl border p-4 text-left transition ${
-                      selected
+                    className={`flex min-h-14 items-center justify-between rounded-xl border px-4 text-left transition ${
+                      isSelected
                         ? "border-[var(--brand-purple)] bg-[var(--accent-light)]"
-                        : "border-[var(--border)] bg-white hover:border-[var(--brand-purple)]/30 hover:bg-[var(--background)]"
+                        : "border-[var(--border)] bg-white hover:border-[var(--brand-purple)]/40 hover:bg-[var(--accent-light)]/40"
                     } disabled:cursor-not-allowed disabled:opacity-60`}
                   >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-sm font-semibold text-[var(--brand-navy)]">
-                          {type.label}
-                        </p>
+                    <span
+                      className={`text-sm font-medium ${
+                        isSelected
+                          ? "text-[var(--brand-purple)]"
+                          : "text-[var(--brand-navy)]/70"
+                      }`}
+                    >
+                      {type.label}
+                    </span>
 
-                        <p className="mt-1 text-xs text-[var(--brand-navy)]/45">
-                          {type.description}
-                        </p>
-                      </div>
-
-                      <span
-                        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border ${
-                          selected
-                            ? "border-[var(--brand-purple)] bg-[var(--brand-purple)] text-white"
-                            : "border-[var(--brand-navy)]/15 bg-white"
-                        }`}
-                      >
-                        {selected && (
-                          <Check
-                            size={13}
-                            strokeWidth={3}
-                          />
-                        )}
-                      </span>
-                    </div>
+                    <span
+                      className={`flex h-5 w-5 items-center justify-center rounded-md border ${
+                        isSelected
+                          ? "border-[var(--brand-purple)] bg-[var(--brand-purple)] text-white"
+                          : "border-[var(--border)] bg-white"
+                      }`}
+                    >
+                      {isSelected && <Check size={13} strokeWidth={3} />}
+                    </span>
                   </button>
                 );
               })}
@@ -521,34 +565,39 @@ export default function CategoryForm({
                 {errors.contentTypes}
               </p>
             )}
-          </section>
+          </div>
 
           {/* Settings */}
-          <section className="border-t border-[var(--border)] pt-6">
-            <h2 className="text-sm font-semibold text-[var(--brand-navy)]">
-              Settings
-            </h2>
+          <div className="border-t border-[var(--border)] pt-8">
+            <div className="mb-5">
+              <h2 className="text-base font-semibold text-[var(--brand-navy)]">
+                Category Settings
+              </h2>
 
-            <div className="mt-4 grid gap-5 md:grid-cols-2">
+              <p className="mt-1 text-xs text-[var(--brand-navy)]/50">
+                Control visibility and category ordering.
+              </p>
+            </div>
+
+            <div className="grid gap-5 md:grid-cols-3">
               {/* Active */}
-              <label className="flex cursor-pointer items-center justify-between rounded-xl border border-[var(--border)] p-4">
+              <label className="flex cursor-pointer items-center justify-between rounded-xl border border-[var(--border)] bg-[var(--background)] p-4">
                 <div>
-                  <p className="text-sm font-semibold text-[var(--brand-navy)]">
-                    Active Category
+                  <p className="text-sm font-medium text-[var(--brand-navy)]">
+                    Active
                   </p>
-
-                  <p className="mt-1 text-xs text-[var(--brand-navy)]/45">
-                    Make this category visible on the website.
+                  <p className="mt-0.5 text-xs text-[var(--brand-navy)]/45">
+                    Make category visible
                   </p>
                 </div>
 
                 <input
                   type="checkbox"
                   checked={form.isActive}
-                  onChange={(e) =>
+                  onChange={(event) =>
                     setForm((current) => ({
                       ...current,
-                      isActive: e.target.checked,
+                      isActive: event.target.checked,
                     }))
                   }
                   disabled={isSubmitting}
@@ -557,24 +606,23 @@ export default function CategoryForm({
               </label>
 
               {/* Featured */}
-              <label className="flex cursor-pointer items-center justify-between rounded-xl border border-[var(--border)] p-4">
+              <label className="flex cursor-pointer items-center justify-between rounded-xl border border-[var(--border)] bg-[var(--background)] p-4">
                 <div>
-                  <p className="text-sm font-semibold text-[var(--brand-navy)]">
-                    Featured Category
+                  <p className="text-sm font-medium text-[var(--brand-navy)]">
+                    Featured
                   </p>
-
-                  <p className="mt-1 text-xs text-[var(--brand-navy)]/45">
-                    Highlight this category in featured sections.
+                  <p className="mt-0.5 text-xs text-[var(--brand-navy)]/45">
+                    Highlight this category
                   </p>
                 </div>
 
                 <input
                   type="checkbox"
                   checked={form.isFeatured}
-                  onChange={(e) =>
+                  onChange={(event) =>
                     setForm((current) => ({
                       ...current,
-                      isFeatured: e.target.checked,
+                      isFeatured: event.target.checked,
                     }))
                   }
                   disabled={isSubmitting}
@@ -582,8 +630,8 @@ export default function CategoryForm({
                 />
               </label>
 
-              {/* Sort Order */}
-              <div>
+              {/* Sort order */}
+              <div className="flex cursor-pointer items-center justify-between rounded-xl border border-[var(--border)] bg-[var(--background)] p-4">
                 <label
                   htmlFor="category-sort-order"
                   className="mb-2 block text-sm font-medium text-[var(--brand-navy)]"
@@ -595,18 +643,28 @@ export default function CategoryForm({
                   id="category-sort-order"
                   type="number"
                   min={0}
+                  step={1}
                   value={form.sortOrder}
-                  onChange={(e) =>
+                  onChange={(event) => {
+                    const value = Number(event.target.value);
+
                     setForm((current) => ({
                       ...current,
-                      sortOrder: Number(e.target.value),
-                    }))
-                  }
+                      sortOrder: Number.isNaN(value)
+                        ? 0
+                        : value,
+                    }));
+
+                    setErrors((current) => ({
+                      ...current,
+                      sortOrder: undefined,
+                    }));
+                  }}
                   disabled={isSubmitting}
-                  className={`w-full rounded-xl border bg-white px-3.5 py-2.5 text-sm text-[var(--brand-navy)] outline-none transition focus:border-[var(--brand-purple)] disabled:cursor-not-allowed disabled:bg-gray-50 ${
+                  className={`h-11 w-full rounded-xl border bg-white px-3.5 text-sm text-[var(--brand-navy)] outline-none transition focus:ring-2 disabled:cursor-not-allowed disabled:opacity-60 ${
                     errors.sortOrder
-                      ? "border-red-300"
-                      : "border-[var(--border)]"
+                      ? "border-red-300 focus:border-red-400 focus:ring-red-100"
+                      : "border-[var(--border)] focus:border-[var(--brand-purple)] focus:ring-[var(--brand-purple)]/10"
                   }`}
                 />
 
@@ -617,16 +675,16 @@ export default function CategoryForm({
                 )}
               </div>
             </div>
-          </section>
+          </div>
         </div>
 
-        {/* Footer */}
-        <div className="flex flex-col-reverse gap-3 border-t border-[var(--border)] px-5 py-4 sm:flex-row sm:items-center sm:justify-end sm:px-6">
+        {/* Actions */}
+        <div className="flex flex-col-reverse gap-3 border-t border-[var(--border)] bg-[var(--background)] px-5 py-4 sm:flex-row sm:items-center sm:justify-end sm:px-6">
           <button
             type="button"
             onClick={onCancel}
             disabled={isSubmitting}
-            className="rounded-xl border border-[var(--border)] px-5 py-2.5 text-sm font-semibold text-[var(--brand-navy)] transition hover:bg-[var(--background)] disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex h-11 items-center justify-center rounded-xl border border-[var(--border)] bg-white px-5 text-sm font-semibold text-[var(--brand-navy)]/70 transition hover:border-[var(--brand-purple)] hover:bg-[var(--accent-light)] hover:text-[var(--brand-purple)] disabled:cursor-not-allowed disabled:opacity-60"
           >
             Cancel
           </button>
@@ -634,7 +692,7 @@ export default function CategoryForm({
           <button
             type="submit"
             disabled={isSubmitting}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--brand-purple)] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[var(--brand-purple)] px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isSubmitting ? (
               <>
@@ -643,15 +701,14 @@ export default function CategoryForm({
                   className="animate-spin"
                 />
                 {isEditMode
-                  ? "Saving Changes..."
+                  ? "Updating..."
                   : "Creating..."}
               </>
             ) : (
               <>
                 <Save size={17} />
-
                 {isEditMode
-                  ? "Save Changes"
+                  ? "Update Category"
                   : "Create Category"}
               </>
             )}

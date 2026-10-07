@@ -14,11 +14,13 @@ type AuthContextType = {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (
-    email: string,
-    password: string
+  email: string,
+  password: string
   ) => Promise<{
     success: boolean;
     message?: string;
+    details?: Record<string, string[]>;
+    user?: AuthUser;
   }>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -97,13 +99,16 @@ export function AuthProvider({ children, }: { children: ReactNode; }) {
           success: false,
           message:
             data.message || "Unable to log in. Please try again.",
+          details: data.details,
         };
       }
 
       if (data.success && data.user) {
         setUser(data.user);
+
         return {
           success: true,
+          user: data.user,
         };
       }
 

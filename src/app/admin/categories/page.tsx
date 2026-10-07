@@ -1,68 +1,41 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import {
+  useState,
+} from "react";
+
 import {
   Plus,
-  Search,
-  SlidersHorizontal,
 } from "lucide-react";
+
 import CategoryDeleteModal from "@/components/admin/categories/CategoryDeleteModal";
-
-import CategoryTable, { type Category, } from "@/components/admin/categories/CategoryTable";
-
+import CategoryTable, {
+  type Category,
+} from "@/components/admin/categories/CategoryTable";
 import CategoryTableSkeleton from "@/components/admin/categories/CategoryTableSkeleton";
-
 import CategoryForm from "@/components/admin/categories/CategoryForm";
+import CategoryPagination from "@/components/admin/categories/CategoryPagination";
 
-const demoCategories: Category[] = [
-  {
-    id: "1",
-    name: "Electronics",
-    slug: "electronics",
-    description: "Electronics and technology",
-    image: "",
-    contentTypes: ["store", "coupon"],
-    isActive: true,
-    isFeatured: true,
-    sortOrder: 1,
-    createdAt: "",
-    updatedAt: "",
-  },
-  {
-    id: "2",
-    name: "Fashion",
-    slug: "fashion",
-    description: "Fashion and clothing",
-    image: "",
-    contentTypes: ["store", "blog"],
-    isActive: true,
-    isFeatured: false,
-    sortOrder: 2,
-    createdAt: "",
-    updatedAt: "",
-  },
-  {
-    id: "3",
-    name: "Deals",
-    slug: "deals",
-    description: "Latest deals and offers",
-    image: "",
-    contentTypes: ["coupon", "blog"],
-    isActive: false,
-    isFeatured: true,
-    sortOrder: 3,
-    createdAt: "",
-    updatedAt: "",
-  },
-];
+import CategoryFilters from "./components/CategoryFilters";
+import CategoryEmptyState from "./components/CategoryEmptyState";
+import CategoryErrorState from "./components/CategoryErrorState";
+
+import { useCategories } from "@/lib/hooks/useCategories";
 
 export default function CategoriesPage() {
-  const [categories, setCategories] =
-    useState<Category[]>(demoCategories);
+  /*
+   * Filters
+   */
+  const [search, setSearch] = useState("");
+  const [contentType, setContentType] =
+    useState("");
+  const [status, setStatus] = useState("");
+  const [featured, setFeatured] =
+    useState("");
 
-  const [isLoading, setIsLoading] =
-    useState(true);
-
+  /*
+   * UI state
+   */
   const [isAddCategoryOpen, setIsAddCategoryOpen] =
     useState(false);
 
@@ -70,16 +43,37 @@ export default function CategoriesPage() {
     useState<Category | null>(null);
 
   const [deletingCategory, setDeletingCategory] =
-    useState<Category | null>(null);  
+    useState<Category | null>(null);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1200);
+  /*
+   * Category data
+   */
+  const {
+    categories,
 
-    return () => clearTimeout(timer);
-  }, []);
+    page,
+    total,
+    totalPages,
+    limit,
 
+    isLoading,
+    isRetrying,
+    fetchError,
+
+    changePage,
+    retry,
+
+    setCategories,
+  } = useCategories({
+    search,
+    contentType,
+    status,
+    featured,
+  });
+
+  /*
+   * Create
+   */
   const handleCategoryCreated = (
     category: Category
   ) => {
@@ -91,23 +85,18 @@ export default function CategoriesPage() {
     setIsAddCategoryOpen(false);
   };
 
+  /*
+   * Edit
+   */
   const handleEditCategory = (
     category: Category
   ) => {
     setEditingCategory(category);
   };
 
-
-  const handleCategoryDeleted = (categoryId: string) => {
-  setCategories((current) =>
-    current.filter(
-      (category) => category.id !== categoryId
-    )
-  );
-
-  setDeletingCategory(null);
-};
-
+  /*
+   * Update
+   */
   const handleCategoryUpdated = (
     updatedCategory: Category
   ) => {
@@ -123,7 +112,32 @@ export default function CategoriesPage() {
   };
 
   /*
-   * EDIT CATEGORY
+   * Delete
+   */
+  const handleCategoryDeleted = (
+    categoryId: string
+  ) => {
+    setCategories((current) =>
+      current.filter(
+        (category) =>
+          category.id !== categoryId
+      )
+    );
+
+    setDeletingCategory(null);
+  };
+
+  /*
+   * Detect whether filters are active.
+   */
+  const hasActiveFilters =
+    search.trim() !== "" ||
+    contentType !== "" ||
+    status !== "" ||
+    featured !== "";
+
+  /*
+   * Edit screen
    */
   if (editingCategory) {
     return (
@@ -141,7 +155,7 @@ export default function CategoriesPage() {
   }
 
   /*
-   * ADD CATEGORY
+   * Add screen
    */
   if (isAddCategoryOpen) {
     return (
@@ -157,9 +171,6 @@ export default function CategoriesPage() {
     );
   }
 
-  /*
-   * CATEGORY LIST
-   */
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -179,7 +190,10 @@ export default function CategoriesPage() {
           onClick={() =>
             setIsAddCategoryOpen(true)
           }
-          disabled={isLoading}
+          disabled={
+            isLoading ||
+            isRetrying
+          }
           className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--brand-purple)] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
         >
           <Plus
@@ -194,104 +208,76 @@ export default function CategoriesPage() {
       {/* Main Card */}
       <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-white shadow-sm">
         {/* Filters */}
-        <div className="border-b border-[var(--border)] p-4 sm:p-5">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-            {/* Search */}
-            <div className="relative flex-1">
-              <Search
-                size={18}
-                strokeWidth={1.9}
-                className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--brand-navy)]/40"
-              />
+        <CategoryFilters
+          search={search}
+          contentType={contentType}
+          status={status}
+          featured={featured}
+          isDisabled={
+            isLoading ||
+            isRetrying
+          }
+          onSearchChange={setSearch}
+          onContentTypeChange={
+            setContentType
+          }
+          onStatusChange={setStatus}
+          onFeaturedChange={
+            setFeatured
+          }
+        />
 
-              <input
-                type="search"
-                placeholder="Search categories..."
-                disabled={isLoading}
-                className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--background)] pl-10 pr-4 text-sm text-[var(--brand-navy)] outline-none transition placeholder:text-[var(--brand-navy)]/35 focus:border-[var(--brand-purple)] focus:ring-2 focus:ring-[var(--brand-purple)]/10 disabled:cursor-not-allowed disabled:opacity-60"
-              />
-            </div>
-
-            {/* Content Type Filter */}
-            <select
-              defaultValue=""
-              disabled={isLoading}
-              className="h-11 rounded-xl border border-[var(--border)] bg-white px-3.5 text-sm text-[var(--brand-navy)] outline-none transition focus:border-[var(--brand-purple)] focus:ring-2 focus:ring-[var(--brand-purple)]/10 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              <option value="">
-                All Content Types
-              </option>
-
-              <option value="store">
-                Store
-              </option>
-
-              <option value="coupon">
-                Coupon
-              </option>
-
-              <option value="blog">
-                Blog
-              </option>
-            </select>
-
-            {/* Status Filter */}
-            <select
-              defaultValue=""
-              disabled={isLoading}
-              className="h-11 rounded-xl border border-[var(--border)] bg-white px-3.5 text-sm text-[var(--brand-navy)] outline-none transition focus:border-[var(--brand-purple)] focus:ring-2 focus:ring-[var(--brand-purple)]/10 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              <option value="">
-                All Status
-              </option>
-
-              <option value="true">
-                Active
-              </option>
-
-              <option value="false">
-                Inactive
-              </option>
-            </select>
-
-            {/* Filter Button */}
-            <button
-              type="button"
-              disabled={isLoading}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-medium text-[var(--brand-navy)]/70 transition hover:border-[var(--brand-purple)] hover:bg-[var(--accent-light)] hover:text-[var(--brand-purple)] disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              <SlidersHorizontal size={17} />
-
-              <span className="lg:hidden">
-                Filters
-              </span>
-            </button>
-          </div>
-        </div>
-
-        {/* Category Table */}
+        {/* Loading */}
         {isLoading ? (
           <CategoryTableSkeleton />
+        ) : fetchError ? (
+          <CategoryErrorState
+            message={fetchError}
+            isRetrying={isRetrying}
+            onRetry={retry}
+          />
+        ) : categories.length === 0 ? (
+          <CategoryEmptyState
+            hasFilters={hasActiveFilters}
+            onAddCategory={() =>
+              setIsAddCategoryOpen(true)
+            }
+          />
         ) : (
-          <CategoryTable
-            categories={categories}
-            onEdit={handleEditCategory}
-            onDelete={(category) => {
-                setDeletingCategory(category);
-            }}
-           />
+          <>
+            <CategoryTable
+              categories={categories}
+              onEdit={handleEditCategory}
+              onDelete={(category) =>
+                setDeletingCategory(category)
+              }
+            />
+
+            <CategoryPagination
+              page={page}
+              totalPages={totalPages}
+              total={total}
+              limit={limit}
+              isLoading={
+                isLoading ||
+                isRetrying
+              }
+              onPageChange={changePage}
+            />
+          </>
         )}
       </div>
 
-
-
+      {/* Delete Modal */}
       {deletingCategory && (
         <CategoryDeleteModal
           category={deletingCategory}
           onCancel={() =>
             setDeletingCategory(null)
           }
-          onDeleted={handleCategoryDeleted}
+          onDeleted={
+            handleCategoryDeleted
+          }
         />
       )}
     </div>

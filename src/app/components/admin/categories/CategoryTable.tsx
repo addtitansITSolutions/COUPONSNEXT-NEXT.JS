@@ -70,7 +70,7 @@ export default function CategoryTable({ categories, onEdit, onDelete, }: Categor
         </thead>
 
         <tbody>
-          {categories.map((category) => (
+          {categories?.map((category) => (
             <tr
               key={category.id}
               className="border-b border-[var(--border)] last:border-b-0 transition hover:bg-[var(--background)]/60"
@@ -108,7 +108,7 @@ export default function CategoryTable({ categories, onEdit, onDelete, }: Categor
               {/* Content Types */}
               <td className="px-5 py-4">
                 <div className="flex flex-wrap gap-1.5">
-                  {category.contentTypes.map((type) => (
+                  {category?.contentTypes?.map((type) => (
                     <span
                       key={type}
                       className="inline-flex rounded-lg bg-[var(--accent-light)] px-2.5 py-1 text-xs font-medium text-[var(--brand-purple)]"
