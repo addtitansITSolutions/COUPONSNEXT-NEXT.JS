@@ -5,11 +5,14 @@ export interface IStore {
   slug: string;
   description?: string;
   logo?: string;
-  websiteUrl: string;
+  storeBanner?: string;
+  websiteUrl?: string;
   affiliateUrl?: string;
-  country: string;
+  country?: string;
   category?: mongoose.Types.ObjectId;
   isActive: boolean;
+  isFeatured: boolean;
+  sortOrder: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -29,7 +32,6 @@ const StoreSchema = new Schema<IStore>(
       unique: true,
       lowercase: true,
       trim: true,
-      index: true,
     },
 
     description: {
@@ -43,9 +45,13 @@ const StoreSchema = new Schema<IStore>(
       trim: true,
     },
 
+    storeBanner: {
+      type: String,
+      trim: true,
+    },
+
     websiteUrl: {
       type: String,
-      required: [true, "Store website URL is required"],
       trim: true,
     },
 
@@ -56,10 +62,8 @@ const StoreSchema = new Schema<IStore>(
 
     country: {
       type: String,
-      required: [true, "Country is required"],
       uppercase: true,
       trim: true,
-      default: "IN",
     },
 
     category: {
@@ -71,11 +75,58 @@ const StoreSchema = new Schema<IStore>(
       type: Boolean,
       default: true,
     },
+
+    isFeatured: {
+      type: Boolean,
+      default: false,
+    },
+
+    sortOrder: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
   },
   {
     timestamps: true,
   }
 );
+
+/*
+ * Common query indexes
+ */
+
+// Admin/public listing by status and manual order
+StoreSchema.index({
+  isActive: 1,
+  sortOrder: 1,
+});
+
+// Featured stores ordered manually
+StoreSchema.index({
+  isFeatured: 1,
+  isActive: 1,
+  sortOrder: 1,
+});
+
+// Store filtering by category and status
+StoreSchema.index({
+  category: 1,
+  isActive: 1,
+  sortOrder: 1,
+});
+
+// Store filtering by country and status
+StoreSchema.index({
+  country: 1,
+  isActive: 1,
+  sortOrder: 1,
+});
+
+// Search/sorting by name
+StoreSchema.index({
+  name: 1,
+});
 
 const Store = models.Store || model<IStore>("Store", StoreSchema);
 

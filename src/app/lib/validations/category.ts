@@ -81,21 +81,16 @@ export const createCategorySchema = z.object({
     .default(0),
 });
 
-export type CreateCategoryInput = z.infer<
-  typeof createCategorySchema
->;
+export type CreateCategoryInput = z.infer< typeof createCategorySchema >;
 
 
 
 
 
 
-export const updateCategorySchema =
-  createCategorySchema.partial();
+export const updateCategorySchema = createCategorySchema.partial();
 
-export type UpdateCategoryInput = z.infer<
-  typeof updateCategorySchema
->;
+export type UpdateCategoryInput = z.infer< typeof updateCategorySchema >;
 
 
 
@@ -150,6 +145,4 @@ export const categoryQuerySchema = z.object({
     .optional(),
 });
 
-export type CategoryQueryInput = z.infer<
-  typeof categoryQuerySchema
->;
+export type CategoryQueryInput = z.infer< typeof categoryQuerySchema >;
