@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { getApiErrorMessageOnUi } from "@/lib/errors/getApiErrorMessageOnUi";
 
 export interface StoreCategory {
   id: string;
@@ -98,8 +99,7 @@ export function useStores( options: UseStoresOptions = {} ): UseStoresReturn {
     hasPreviousPage: false,
   });
 
-  const [filters, setFilters] =
-    useState<StoreFilters>(DEFAULT_FILTERS);
+  const [filters, setFilters] = useState<StoreFilters>(DEFAULT_FILTERS);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -133,11 +133,13 @@ export function useStores( options: UseStoresOptions = {} ): UseStoresReturn {
     return params.toString();
   }, [pagination.page, pagination.limit, filters]);
 
+  
   const fetchStores = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
+      const requestedPage = pagination.page;
       const queryString = buildQueryString();
 
       const response = await fetch(
@@ -153,22 +155,43 @@ export function useStores( options: UseStoresOptions = {} ): UseStoresReturn {
 
       if (!response.ok || !data.success) {
         throw new Error(
-          data.message || "Failed to fetch stores"
+          getApiErrorMessageOnUi(
+            data,
+            "Failed to fetch stores."
+          )
         );
       }
 
+      const nextPagination = data.pagination;
+
+      // If the requested page no longer exists, move to a valid page.
+      const safePage =
+        nextPagination.totalPages > 0
+          ? Math.min(requestedPage, nextPagination.totalPages)
+          : 1;
+
+      if (safePage !== requestedPage) {
+        setPagination((previous) => ({
+          ...previous,
+          page: safePage,
+        }));
+
+        // The page change triggers another fetch through useEffect.
+        return;
+      }
+
       setStores(data.stores);
-      setPagination(data.pagination);
+      setPagination(nextPagination);
     } catch (error) {
       setError(
         error instanceof Error
           ? error.message
-          : "Failed to fetch stores"
+          : "Failed to fetch stores."
       );
     } finally {
       setLoading(false);
     }
-  }, [buildQueryString]);
+  }, [buildQueryString, pagination.page]);
 
   useEffect(() => {
     fetchStores();
@@ -291,6 +314,7 @@ export function useStores( options: UseStoresOptions = {} ): UseStoresReturn {
   /*
    * Delete Store
    */
+  
   const deleteStore = useCallback(
     async (id: string) => {
       const response = await fetch(
@@ -305,19 +329,13 @@ export function useStores( options: UseStoresOptions = {} ): UseStoresReturn {
 
       if (!response.ok || !data.success) {
         throw new Error(
-          data.message || "Failed to delete store"
+          getApiErrorMessageOnUi(
+            data,
+            "Failed to delete store."
+          )
         );
       }
 
-      /*
-       * Do not simply remove the item locally.
-       *
-       * We refresh from the server so that:
-       * - total count is correct
-       * - total pages are correct
-       * - pagination buttons are correct
-       * - current page remains valid
-       */
       await fetchStores();
     },
     [fetchStores]
@@ -326,6 +344,7 @@ export function useStores( options: UseStoresOptions = {} ): UseStoresReturn {
   /*
    * Update Store
    */
+  
   const updateStore = useCallback(
     async (
       id: string,
@@ -347,16 +366,13 @@ export function useStores( options: UseStoresOptions = {} ): UseStoresReturn {
 
       if (!response.ok || !data.success) {
         throw new Error(
-          data.message || "Failed to update store"
+          getApiErrorMessageOnUi(
+            data,
+            "Failed to update store."
+          )
         );
       }
 
-      /*
-       * Refresh the current list after updating.
-       *
-       * This keeps filters, sorting and pagination
-       * synchronized with the database.
-       */
       await fetchStores();
 
       return data.store as Store;

@@ -46,7 +46,7 @@ export default function StoreTable({
   actionLoadingId,
 }: StoreTableProps) {
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+    <div className="overflow-hidden rounded-xl rounded-b-[0px] border border-gray-200 bg-white">
       <div className="overflow-x-auto">
         <table className="min-w-[1200px] w-full text-left">
           <thead>
@@ -83,8 +83,8 @@ export default function StoreTable({
                 Featured
               </th>
 
-              <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
-                Order
+              <th className="whitespace-nowrap px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                Sort Order
               </th>
 
               <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500">

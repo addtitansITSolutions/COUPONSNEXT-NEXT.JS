@@ -16,7 +16,7 @@ export default function StoreTableSkeleton() {
                 "Affiliate",
                 "Status",
                 "Featured",
-                "Order",
+                "Sort Order",
                 "Created",
                 "Actions",
               ].map((heading) => (

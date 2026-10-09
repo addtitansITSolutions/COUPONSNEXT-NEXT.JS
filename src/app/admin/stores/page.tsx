@@ -40,7 +40,7 @@ export default function StoresPage() {
     updateStore,
     clearFilters,
   } = useStores({
-    initialLimit: 7,
+    initialLimit: 10,
   });
 
   const [showForm, setShowForm] = useState(false);
@@ -162,32 +162,21 @@ export default function StoresPage() {
        */
       await refresh();
 
-      toast.success(
-        "Store created successfully.",
-        {
-          title: "Store Created",
-        }
-      );
+      // toast.success(
+      //   "Store created successfully.",
+      //   {
+      //     title: "Store Created",
+      //   }
+      // );
 
       setShowForm(false);
       setEditingStore(null);
     } catch (error) {
-      /*
-       * Update errors are already handled by
-       * updateStore's caller below.
-       *
-       * For create errors, the toast has already
-       * been displayed above.
-       */
-      if (
-        editingStore &&
-        error instanceof Error
-      ) {
+      if (editingStore && error instanceof Error) {
         toast.error(error.message, {
           title: "Update Store Failed",
         });
       }
-
       throw error;
     } finally {
       setFormSubmitting(false);
@@ -494,7 +483,7 @@ export default function StoresPage() {
         ) : (
           <>
             {/* Table */}
-            <div className="relative rounded-xl border border-gray-200 bg-white shadow-sm">
+            <div className="relative rounded-xl rounded-b-[0px] border border-gray-200 bg-white shadow-sm">
               {loading && (
                 <div className="absolute inset-0 z-10 flex items-start justify-center rounded-xl bg-white/50 pt-6 backdrop-blur-[1px]">
                   <div className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-600 shadow-sm">
@@ -525,7 +514,7 @@ export default function StoresPage() {
 
 
               {/* Pagination */}
-            <div className="rounded-xl border-b border-gray-200 bg-white p-4 shadow-sm shadow-sm">
+            <div className="rounded-xl rounded-b-[0px] border-b border-gray-200 bg-white p-4 shadow-sm shadow-sm">
               <StorePagination
                 page={pagination.page}
                 totalPages={
