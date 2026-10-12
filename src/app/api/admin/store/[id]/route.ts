@@ -5,6 +5,7 @@ import { requireAdmin } from "@/lib/auth-guards";
 import { handleApiError } from "@/lib/errors/handleApiError";
 import { ApiError } from "@/lib/errors/ApiError";
 import { updateStoreSchema } from "@/lib/validations/store";
+import { deleteUploadedImage } from "@/lib/uploads";
 import Store from "@/models/Store";
 import Category from "@/models/Category";
 import Coupon from "@/models/Coupon";
@@ -72,10 +73,13 @@ export async function GET( request: NextRequest, { params }: { params: Promise<{
   }
 }
 
+
 export async function PATCH( request: NextRequest, { params }: { params: Promise<{ id: string }> } ) {
   try {
     await requireAdmin();
+
     const { id } = await params;
+
     if (!/^[0-9a-fA-F]{24}$/.test(id)) {
       throw new ApiError(
         400,
@@ -83,6 +87,7 @@ export async function PATCH( request: NextRequest, { params }: { params: Promise
         "INVALID_STORE_ID"
       );
     }
+
     const body = await request.json();
     const validation = updateStoreSchema.safeParse(body);
 
@@ -94,7 +99,7 @@ export async function PATCH( request: NextRequest, { params }: { params: Promise
 
     await connectDB();
 
-    // Check whether the store exists
+    // Check whether the store exists.
     const existingStore = await Store.findById(id);
 
     if (!existingStore) {
@@ -105,9 +110,15 @@ export async function PATCH( request: NextRequest, { params }: { params: Promise
       );
     }
 
-    // Check category only when a category is provided
+    // Capture the existing image URLs before updating.
+    const oldLogo = existingStore.logo;
+    const oldBanner = existingStore.storeBanner;
+
+    // Check category only when a category is provided.
     if (storeData.category) {
-      const categoryExists = await Category.exists({ _id: storeData.category, });
+      const categoryExists = await Category.exists({
+        _id: storeData.category,
+      });
 
       if (!categoryExists) {
         throw new ApiError(
@@ -118,10 +129,41 @@ export async function PATCH( request: NextRequest, { params }: { params: Promise
       }
     }
 
-    // Update only the fields provided in the request
+    // Update only the fields provided in the request.
     Object.assign(existingStore, storeData);
 
+    // Save the database changes first.
     await existingStore.save();
+
+    // Delete replaced or removed images only after a successful save.
+    const imagesToDelete = [
+      oldLogo &&
+        oldLogo !== existingStore.logo
+        ? oldLogo
+        : null,
+
+      oldBanner &&
+        oldBanner !== existingStore.storeBanner
+        ? oldBanner
+        : null,
+    ].filter(
+      (url): url is string => typeof url === "string"
+    );
+
+    // Avoid deleting the same image twice.
+    for (const imageUrl of new Set(imagesToDelete)) {
+      try {
+        // The helper only deletes URLs from our own upload folders.
+        await deleteUploadedImage(imageUrl);
+      } catch (cleanupError) {
+        // The database update succeeded, so don't report it as failed
+        // just because old-file cleanup failed.
+        console.error(
+          `[Store image cleanup] Failed to delete ${imageUrl}:`,
+          cleanupError
+        );
+      }
+    }
 
     return NextResponse.json(
       {
@@ -137,7 +179,9 @@ export async function PATCH( request: NextRequest, { params }: { params: Promise
           websiteUrl: existingStore.websiteUrl,
           affiliateUrl: existingStore.affiliateUrl,
           country: existingStore.country,
-          category: existingStore.category ? existingStore.category.toString() : undefined,
+          category: existingStore.category
+            ? existingStore.category.toString()
+            : undefined,
           isActive: existingStore.isActive,
           isFeatured: existingStore.isFeatured,
           sortOrder: existingStore.sortOrder,
@@ -177,9 +221,10 @@ export async function DELETE( request: NextRequest, { params }: { params: Promis
         "STORE_NOT_FOUND"
       );
     }
-
-    const couponCount = await Coupon.countDocuments({ store: store._id, });
-
+    // Prevent deleting stores that are used by coupons.
+    const couponCount = await Coupon.countDocuments({
+      store: store._id,
+    });
     if (couponCount > 0) {
       throw new ApiError(
         409,
@@ -187,8 +232,39 @@ export async function DELETE( request: NextRequest, { params }: { params: Promis
         "STORE_IN_USE"
       );
     }
-
-    await Store.deleteOne({ _id: store._id });
+    // Save image URLs before deleting the store document.
+    const imageUrls = [
+      store.logo,
+      store.storeBanner,
+    ].filter(
+      (url): url is string =>
+        typeof url === "string" && url.trim().length > 0
+    );
+    // Avoid attempting to delete the same image twice.
+    const uniqueImageUrls = [...new Set(imageUrls)];
+    // Delete the store from MongoDB first.
+    const deleteResult = await Store.deleteOne({
+      _id: store._id,
+    });
+    if (deleteResult.deletedCount !== 1) {
+      throw new ApiError(
+        404,
+        "Store could not be deleted because it no longer exists",
+        "STORE_DELETE_FAILED"
+      );
+    }
+    // Clean up uploaded images after successful store deletion.
+    // Image cleanup failure must not undo the successful deletion.
+    for (const imageUrl of uniqueImageUrls) {
+      try {
+        await deleteUploadedImage(imageUrl);
+      } catch (cleanupError) {
+        console.error(
+          `[Store image cleanup] Failed to delete ${imageUrl}:`,
+          cleanupError
+        );
+      }
+    }
 
     return NextResponse.json(
       {

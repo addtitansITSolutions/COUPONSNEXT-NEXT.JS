@@ -113,13 +113,6 @@ export default function StoresPage() {
           formData
         );
 
-        toast.success(
-          "Store updated successfully.",
-          {
-            title: "Store Updated",
-          }
-        );
-
         setShowForm(false);
         setEditingStore(null);
 

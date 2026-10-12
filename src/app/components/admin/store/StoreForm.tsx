@@ -1506,11 +1506,9 @@
 
 
 "use client";
-
 import { useEffect, useState } from "react";
 import type { SubmitEvent } from "react";
 import { ImagePlus, Loader2, Save, Trash2, Upload, X } from "lucide-react";
-
 import type { Store } from "@/lib/hooks/useStores";
 import { toast } from "@/components/ui/toast/toast";
 
@@ -1620,8 +1618,9 @@ function isValidOptionalUrl(value: string): boolean {
 async function uploadStoreImage(
   file: File,
   folder: "logos" | "banners"
-): Promise<string> {
+) {
   const formData = new FormData();
+
   formData.append("file", file);
   formData.append("folder", folder);
 
@@ -1631,26 +1630,36 @@ async function uploadStoreImage(
     body: formData,
   });
 
-  const data = await response.json().catch(() => null);
+  const data = await response.json();
 
-  if (!response.ok || !data?.success || !data?.image?.url) {
-    throw new Error(
-      data?.message || `Failed to upload ${folder === "logos" ? "logo" : "banner"}.`
-    );
+  if (!response.ok || !data.success) {
+    throw new Error(data.message || "Image upload failed.");
   }
 
   return data.image.url as string;
 }
 
-export default function StoreForm({
-  store,
-  onSubmit,
-  onCancel,
-  submitting = false,
-}: StoreFormProps) {
-  const [form, setForm] = useState<FormState>(() =>
-    createFormFromStore(store)
-  );
+
+async function deleteStoreImage(imageUrl: string): Promise<void> {
+  const response = await fetch("/api/admin/uploads", {
+    method: "DELETE",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ imageUrl }),
+  });
+
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok || !data?.success) {
+    throw new Error(data?.message || "Failed to delete image.");
+  }
+}
+
+
+export default function StoreForm({ store, onSubmit, onCancel, submitting = false, }: StoreFormProps) {
+  const [form, setForm] = useState<FormState>(() => createFormFromStore(store) );
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
@@ -1663,9 +1672,10 @@ export default function StoreForm({
   const [logoPreview, setLogoPreview] = useState("");
   const [bannerPreview, setBannerPreview] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [deletingImage, setDeletingImage] = useState<"logo" | "banner" | null>(null);
 
   const isEditMode = !!store;
-  const busy = submitting || uploading;
+  const busy = submitting || uploading || deletingImage !== null;
 
   useEffect(() => {
     setForm(createFormFromStore(store));
@@ -1821,15 +1831,39 @@ export default function StoreForm({
     setServerError(null);
   };
 
-  const removeImage = (type: "logo" | "banner") => {
-    if (type === "logo") {
-      setLogoFile(null);
-      updateField("logo", "");
-    } else {
-      setBannerFile(null);
-      updateField("storeBanner", "");
+  
+  const removeImage = async (type: "logo" | "banner") => {
+    if (busy) return;
+
+    const imageUrl = type === "logo" ? form.logo.trim() : form.storeBanner.trim();
+    setDeletingImage(type);
+    setServerError(null);
+    try {
+      // Delete only images stored by our own upload system.
+      // External image URLs are only removed from the store reference.
+      if (imageUrl.startsWith("/uploads/")) { await deleteStoreImage(imageUrl); }
+
+      if (type === "logo") {
+        setLogoFile(null);
+        updateField("logo", "");
+      } else {
+        setBannerFile(null);
+        updateField("storeBanner", "");
+      }
+
+      toast.success("Image removed successfully.", {
+        title: "Image removed",
+      });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to remove image.";
+        setServerError(message);
+        toast.error(message, { title: "Unable to remove image" });
+    } finally {
+      setDeletingImage(null);
     }
   };
+
 
   const validateForm = (): boolean => {
     const nextErrors: FieldErrors = {};
@@ -1924,11 +1958,11 @@ export default function StoreForm({
         const uploads: Promise<string>[] = [];
 
         if (logoFile) {
-          uploads.push(uploadStoreImage(logoFile, "logos"));
+          uploads.push(uploadStoreImage(logoFile, "logos"));                        // calling image upload function for logo file and pushing the promise to uploads array
         }
 
         if (bannerFile) {
-          uploads.push(uploadStoreImage(bannerFile, "banners"));
+          uploads.push(uploadStoreImage(bannerFile, "banners"));                    // calling image upload function for banner file and pushing the promise to uploads array
         }
 
         const uploadedUrls = await Promise.all(uploads);
@@ -1942,8 +1976,8 @@ export default function StoreForm({
         name: form.name.trim(),
         slug: form.slug.trim(),
         description: form.description.trim() || undefined,
-        logo: logo || undefined,
-        storeBanner: storeBanner || undefined,
+        logo: logo,
+        storeBanner: storeBanner,
         websiteUrl: form.websiteUrl.trim() || undefined,
         affiliateUrl: form.affiliateUrl.trim() || undefined,
         country: form.country.trim().toUpperCase() || undefined,
@@ -2008,15 +2042,26 @@ export default function StoreForm({
               </span>
             )}
 
+            
             <button
               type="button"
-              onClick={() => removeImage(type)}
+              onClick={() => void removeImage(type)}
               disabled={busy}
-              className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-lg bg-white px-2.5 py-1.5 text-xs font-medium text-red-600 shadow transition hover:bg-red-50 disabled:opacity-50"
+              className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-lg bg-white px-2.5 py-1.5 text-xs font-medium text-red-600 shadow transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <Trash2 size={14} />
-              Remove
+              {deletingImage === type ? (
+                <>
+                  <Loader2 size={14} className="animate-spin" />
+                  Removing...
+                </>
+              ) : (
+                <>
+                  <Trash2 size={14} />
+                  Remove
+                </>
+              )}
             </button>
+
           </div>
         ) : (
           <label

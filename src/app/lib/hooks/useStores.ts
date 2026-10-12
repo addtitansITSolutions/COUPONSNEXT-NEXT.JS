@@ -101,6 +101,19 @@ export function useStores( options: UseStoresOptions = {} ): UseStoresReturn {
 
   const [filters, setFilters] = useState<StoreFilters>(DEFAULT_FILTERS);
 
+  
+  const [debouncedSearch, setDebouncedSearch] = useState( DEFAULT_FILTERS.search );
+
+  //debpounce search input to avoid excessive API calls
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setDebouncedSearch(filters.search.trim());
+    }, 400);
+
+    return () => clearTimeout(timeoutId);
+  }, [filters.search]);
+
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -110,8 +123,8 @@ export function useStores( options: UseStoresOptions = {} ): UseStoresReturn {
     params.set("page", pagination.page.toString());
     params.set("limit", pagination.limit.toString());
 
-    if (filters.search.trim()) {
-      params.set("search", filters.search.trim());
+    if (debouncedSearch) {
+      params.set("search", debouncedSearch);
     }
 
     if (filters.category) {
@@ -131,7 +144,15 @@ export function useStores( options: UseStoresOptions = {} ): UseStoresReturn {
     }
 
     return params.toString();
-  }, [pagination.page, pagination.limit, filters]);
+  }, [
+  pagination.page,
+  pagination.limit,
+  filters.category,
+  filters.isActive,
+  filters.isFeatured,
+  filters.country,
+  debouncedSearch,
+]);
 
   
   const fetchStores = useCallback(async () => {

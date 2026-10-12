@@ -2,7 +2,7 @@ import "server-only";
 
 import sharp from "sharp";
 import { randomUUID } from "node:crypto";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, writeFile , unlink } from "node:fs/promises";
 import path from "node:path";
 
 export const UPLOAD_FOLDERS = [
@@ -37,10 +37,7 @@ export class UploadError extends Error {
   }
 }
 
-export async function saveUploadedImage(
-  file: File,
-  folder: UploadFolder
-): Promise<UploadedImage> {
+export async function saveUploadedImage( file: File, folder: UploadFolder ): Promise<UploadedImage> {
   if (!UPLOAD_FOLDERS.includes(folder)) {
     throw new UploadError(
       "Unsupported upload folder.",
@@ -150,3 +147,63 @@ export async function saveUploadedImage(
     size: output.length,
   };
 }
+
+
+
+export async function deleteUploadedImage( imageUrl: string ): Promise<{ deleted: boolean }> {
+  const uploadDir = process.env.UPLOAD_DIR;
+
+  if (!uploadDir?.trim()) {
+    throw new Error("UPLOAD_DIR is not configured.");
+  }
+
+  // Only accept our own public upload URLs.
+  const match = imageUrl.match( /^\/uploads\/(logos|banners|coupons|blogs)\/([a-f0-9-]+\.webp)$/i );
+
+  if (!match) {
+    throw new UploadError(
+      "Invalid uploaded image URL.",
+      400,
+      "INVALID_IMAGE_URL"
+    );
+  }
+
+  const [, folder, filename] = match;
+
+  if ( !UPLOAD_FOLDERS.includes(folder as UploadFolder) ) {
+    throw new UploadError(
+      "Unsupported upload folder.",
+      400,
+      "INVALID_UPLOAD_FOLDER"
+    );
+  }
+
+  const targetDir = path.resolve(uploadDir, folder);
+  const targetPath = path.resolve(targetDir, filename);
+
+  // Verify the resolved path remains inside the expected folder.
+  if (path.dirname(targetPath) !== targetDir) {
+    throw new UploadError(
+      "Invalid image path.",
+      400,
+      "INVALID_IMAGE_PATH"
+    );
+  }
+
+  try {
+    await unlink(targetPath);
+    return { deleted: true };
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      "code" in error &&
+      error.code === "ENOENT"
+    ) {
+      // Treat an already-missing file as successfully removed.
+      return { deleted: false };
+    }
+
+    throw error;
+  }
+}
+

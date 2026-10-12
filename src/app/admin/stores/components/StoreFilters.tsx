@@ -193,15 +193,7 @@ interface StoreFiltersProps {
   onClear: () => void;
 }
 
-export default function StoreFilters({
-  filters,
-  onSearchChange,
-  onCategoryChange,
-  onIsActiveChange,
-  onIsFeaturedChange,
-  onCountryChange,
-  onClear,
-}: StoreFiltersProps) {
+export default function StoreFilters({ filters, onSearchChange, onCategoryChange, onIsActiveChange, onIsFeaturedChange,  onCountryChange, onClear }: StoreFiltersProps) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [localCountry, setLocalCountry] = useState(filters.country || "");
