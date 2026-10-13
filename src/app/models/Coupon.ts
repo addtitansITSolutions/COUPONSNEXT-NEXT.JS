@@ -1,3 +1,4 @@
+
 import mongoose, { Schema, models, model } from "mongoose";
 
 export type CouponType = "code" | "deal";
@@ -9,15 +10,16 @@ export interface ICoupon {
   description: string;
   type: CouponType;
   code?: string;
-  image: string;
+  image?: string;
   store: mongoose.Types.ObjectId;
   category?: mongoose.Types.ObjectId;
   discount?: string;
-  affiliateUrl?: string;
+  affiliateUrl: string;
   country: string;
   startsAt?: Date;
   expiresAt?: Date;
   status: CouponStatus;
+  isActive: boolean;
   isFeatured: boolean;
   isVerified: boolean;
   sortOrder: number;
@@ -40,6 +42,7 @@ const CouponSchema = new Schema<ICoupon>(
       unique: true,
       lowercase: true,
       trim: true,
+      maxlength: 220,
     },
 
     description: {
@@ -52,35 +55,38 @@ const CouponSchema = new Schema<ICoupon>(
     type: {
       type: String,
       enum: ["code", "deal"],
-      required: true,
+      required: [true, "Coupon type is required"],
     },
 
+    
     code: {
       type: String,
       trim: true,
       uppercase: true,
       maxlength: 100,
-      required: function (this: ICoupon) {
+      required: function (this: mongoose.Document & ICoupon) {
         return this.type === "code";
       },
     },
 
+
+    // Optional: the frontend falls back to the referenced store logo.
     image: {
       type: String,
-      required: [true, "Coupon image is required"],
       trim: true,
+      default: undefined,
     },
 
     store: {
       type: Schema.Types.ObjectId,
       ref: "Store",
       required: [true, "Store is required"],
-      index: true,
     },
 
     category: {
       type: Schema.Types.ObjectId,
       ref: "Category",
+      default: undefined,
     },
 
     discount: {
@@ -91,25 +97,28 @@ const CouponSchema = new Schema<ICoupon>(
 
     affiliateUrl: {
       type: String,
+      required: [true, "Affiliate URL is required"],
       trim: true,
     },
 
     country: {
       type: String,
-      required: true,
+      required: [true, "Country is required"],
       uppercase: true,
       trim: true,
       default: "IN",
-      index: true,
+      minlength: 2,
+      maxlength: 2,
     },
 
     startsAt: {
       type: Date,
+      default: undefined,
     },
 
     expiresAt: {
       type: Date,
-      index: true,
+      default: undefined,
     },
 
     status: {
@@ -117,13 +126,16 @@ const CouponSchema = new Schema<ICoupon>(
       enum: ["draft", "published", "expired"],
       default: "draft",
       required: true,
-      index: true,
+    },
+
+    isActive: {
+      type: Boolean,
+      default: true,
     },
 
     isFeatured: {
       type: Boolean,
       default: false,
-      index: true,
     },
 
     isVerified: {
@@ -135,6 +147,10 @@ const CouponSchema = new Schema<ICoupon>(
       type: Number,
       default: 0,
       min: 0,
+      validate: {
+        validator: Number.isInteger,
+        message: "Sort order must be a whole number.",
+      },
     },
   },
   {
@@ -142,19 +158,58 @@ const CouponSchema = new Schema<ICoupon>(
   }
 );
 
+// 1. Homepage and general public coupon listings.
 CouponSchema.index({
-  store: 1,
+  status: 1,
+  isActive: 1,
   country: 1,
-  status: 1,
-  expiresAt: 1,
-});
-
-CouponSchema.index({
-  status: 1,
-  isFeatured: 1,
+  sortOrder: 1,
   createdAt: -1,
 });
 
-const Coupon = models.Coupon || model<ICoupon>("Coupon", CouponSchema);
+// 2. Featured coupon listings.
+CouponSchema.index({
+  status: 1,
+  isActive: 1,
+  country: 1,
+  isFeatured: 1,
+  sortOrder: 1,
+  createdAt: -1,
+});
+
+// 3. Coupons belonging to a particular store.
+CouponSchema.index({
+  store: 1,
+  status: 1,
+  isActive: 1,
+  country: 1,
+  sortOrder: 1,
+  createdAt: -1,
+});
+
+// 4. Coupons belonging to a category.
+CouponSchema.index({
+  category: 1,
+  status: 1,
+  isActive: 1,
+  country: 1,
+  sortOrder: 1,
+  createdAt: -1,
+});
+
+
+// 5. Coupons belonging to a specific category within a store.
+CouponSchema.index({
+  store: 1,
+  category: 1,
+  status: 1,
+  isActive: 1,
+  country: 1,
+  sortOrder: 1,
+  createdAt: -1,
+});
+
+const Coupon =
+  models.Coupon || model<ICoupon>("Coupon", CouponSchema);
 
 export default Coupon;
