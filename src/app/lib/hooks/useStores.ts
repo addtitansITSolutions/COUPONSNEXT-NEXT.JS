@@ -46,6 +46,7 @@ interface StorePagination {
 
 interface UseStoresOptions {
   initialLimit?: number;
+  initialIsActive?: string;
 }
 
 interface UseStoresReturn {
@@ -81,12 +82,12 @@ const DEFAULT_FILTERS: StoreFilters = {
   search: "",
   category: "",
   isActive: "",
-  isFeatured: "",
+  isFeatured: "",                                 // in filter we do not put isfeatured as boolean because we want to have three states for isfeatured filter, true, false and empty string (empty string means no filter applied)  // in filter we do not put isactive as boolean because we want to have three states for isactive filter, true, false and empty string (empty string means no filter applied)
   country: "",
 };
 
 export function useStores( options: UseStoresOptions = {} ): UseStoresReturn {
-  const { initialLimit = 20 } = options;
+  const { initialLimit = 20 , initialIsActive = "" } = options;
 
   const [stores, setStores] = useState<Store[]>([]);
 
@@ -99,7 +100,7 @@ export function useStores( options: UseStoresOptions = {} ): UseStoresReturn {
     hasPreviousPage: false,
   });
 
-  const [filters, setFilters] = useState<StoreFilters>(DEFAULT_FILTERS);
+  const [filters, setFilters] = useState<StoreFilters>(() => ({ ...DEFAULT_FILTERS, isActive: initialIsActive, }));
 
   
   const [debouncedSearch, setDebouncedSearch] = useState( DEFAULT_FILTERS.search );

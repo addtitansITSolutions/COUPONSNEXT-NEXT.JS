@@ -255,7 +255,7 @@ export default function StoreFilters({ filters, onSearchChange, onCategoryChange
     filters.country.trim() !== "";
 
   return (
-    <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
+    <div className="flex flex-col gap-3 xxl:flex-row xxl:items-center">
       {/* Search Input - Expands to occupy available space on xl screens */}
       <div className="relative min-w-[240px] flex-1">
         <Search

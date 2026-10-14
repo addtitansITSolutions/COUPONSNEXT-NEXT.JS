@@ -15,6 +15,7 @@ type UseCategoriesOptions = {
   contentType: string;
   status: string;
   featured: string;
+  limit?: number;
 };
 
 type CategoriesPagination = {
@@ -24,12 +25,12 @@ type CategoriesPagination = {
   totalPages: number;
 };
 
-export function useCategories({ search,  contentType,  status, featured, }: UseCategoriesOptions) {
+export function useCategories({ search,  contentType,  status, featured, limit = ITEMS_PER_PAGE, }: UseCategoriesOptions) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState<CategoriesPagination>({
       page: 1,
-      limit: ITEMS_PER_PAGE,
+      limit,
       total: 0,
       totalPages: 0,
     });
@@ -56,7 +57,7 @@ export function useCategories({ search,  contentType,  status, featured, }: UseC
         setFetchError(null);
         const params = new URLSearchParams();
         params.set("page", String(requestedPage));
-        params.set("limit", String(ITEMS_PER_PAGE));
+        params.set("limit", String(limit));
 
         if (search.trim()) {
           params.set("search", search.trim());
@@ -150,7 +151,7 @@ export function useCategories({ search,  contentType,  status, featured, }: UseC
         }
       }
     },
-    [ search, contentType, status, featured, ]
+    [ search, contentType, status, featured, limit ]
   );
 
   /*
