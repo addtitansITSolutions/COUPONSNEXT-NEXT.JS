@@ -1,19 +1,15 @@
-
 "use client";
-
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   Plus,
   RefreshCw,
   TicketPercent,
 } from "lucide-react";
-
 import CouponDeleteModal from "@/components/admin/coupons/CouponDeleteModal";
 import CouponForm from "@/components/admin/coupons/CouponForm";
 import CouponPagination from "@/components/admin/coupons/CouponPagination";
 import CouponTable from "@/components/admin/coupons/CouponTable";
 import CouponTableSkeleton from "@/components/admin/coupons/CouponTableSkeleton";
-
 import CouponEmptyState from "./components/CouponEmptyState";
 import CouponErrorState from "./components/CouponErrorState";
 import CouponFilters from "./components/CouponFilters";
@@ -57,6 +53,7 @@ export default function CouponsPage() {
   const [deletingCoupon, setDeletingCoupon] = useState<Coupon | null>(null);
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
   const [formSubmitting, setFormSubmitting] = useState(false);
+  const actionInProgressRef = useRef<Set<string>>(new Set());
 
   const hasFilters = useMemo(() => {
     return (
@@ -214,48 +211,128 @@ export default function CouponsPage() {
   };
 
   // Toggle featured status
-  const handleToggleFeatured = async (
-    coupon: Coupon
-  ) => {
-    try {
-      setActionLoadingId(coupon.id);
-      await updateCoupon(coupon.id, {
-        isFeatured: !coupon.isFeatured,
-      });
-      toast.success(
-        `${coupon.title} has been ${ coupon.isFeatured ? "removed from" : "added to" } featured coupons.`,
-        {
-          title: coupon.isFeatured ? "Removed From Featured" : "Added To Featured",
-        }
-      );
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Unable to update coupon.";
-      toast.error(message, { title: "Update Coupon Failed", });
-    } finally {
-      setActionLoadingId(null);
-    }
-  };
+  // const handleToggleFeatured = async (
+  //   coupon: Coupon
+  // ) => {
+  //   try {
+  //     setActionLoadingId(coupon.id);
+  //     await updateCoupon(coupon.id, {
+  //       isFeatured: !coupon.isFeatured,
+  //     });
+  //     toast.success(
+  //       `${coupon.title} has been ${ coupon.isFeatured ? "removed from" : "added to" } featured coupons.`,
+  //       {
+  //         title: coupon.isFeatured ? "Removed From Featured" : "Added To Featured",
+  //       }
+  //     );
+  //   } catch (error) {
+  //     const message = error instanceof Error ? error.message : "Unable to update coupon.";
+  //     toast.error(message, { title: "Update Coupon Failed", });
+  //   } finally {
+  //     setActionLoadingId(null);
+  //   }
+  // };
 
-  // Toggle verified status
-  const handleToggleVerified = async ( coupon: Coupon ) => {
-    try {
-      setActionLoadingId(coupon.id);
-      await updateCoupon(coupon.id, {
-        isVerified: !coupon.isVerified,
-      });
-      toast.success(
-        `${coupon.title} has been ${ coupon.isVerified ? "marked as unverified" : "verified" }.`,
-        {
-          title: coupon.isVerified ? "Verification Removed" : "Coupon Verified",
-        }
-      );
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Unable to update coupon.";
-      toast.error(message, { title: "Update Coupon Failed" , });
-    } finally {
-      setActionLoadingId(null);
-    }
-  };
+  // // Toggle verified status
+  // const handleToggleVerified = async ( coupon: Coupon ) => {
+  //   try {
+  //     setActionLoadingId(coupon.id);
+  //     await updateCoupon(coupon.id, {
+  //       isVerified: !coupon.isVerified,
+  //     });
+  //     toast.success(
+  //       `${coupon.title} has been ${ coupon.isVerified ? "marked as unverified" : "verified" }.`,
+  //       {
+  //         title: coupon.isVerified ? "Verification Removed" : "Coupon Verified",
+  //       }
+  //     );
+  //   } catch (error) {
+  //     const message = error instanceof Error ? error.message : "Unable to update coupon.";
+  //     toast.error(message, { title: "Update Coupon Failed" , });
+  //   } finally {
+  //     setActionLoadingId(null);
+  //   }
+  // };
+
+  
+    const handleToggleFeatured = async (coupon: Coupon) => {
+      if (actionInProgressRef.current.has(coupon.id)) return;
+
+      actionInProgressRef.current.add(coupon.id);
+
+      try {
+        setActionLoadingId(coupon.id);
+
+        await updateCoupon(coupon.id, {
+          isFeatured: !coupon.isFeatured,
+        });
+
+        toast.success(
+          `${coupon.title} has been ${
+            coupon.isFeatured ? "removed from" : "added to"
+          } featured coupons.`,
+          {
+            title: coupon.isFeatured
+              ? "Removed From Featured"
+              : "Added To Featured",
+          }
+        );
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Unable to update coupon.";
+
+        toast.error(message, { title: "Update Coupon Failed" });
+      } finally {
+        actionInProgressRef.current.delete(coupon.id);
+        setActionLoadingId(null);
+      }
+    };
+
+    const handleToggleVerified = async (coupon: Coupon) => {
+      if (actionInProgressRef.current.has(coupon.id)) return;
+
+      actionInProgressRef.current.add(coupon.id);
+
+      try {
+        setActionLoadingId(coupon.id);
+
+        await updateCoupon(coupon.id, {
+          isVerified: !coupon.isVerified,
+        });
+
+        toast.success(
+          `${coupon.title} has been ${
+            coupon.isVerified ? "marked as unverified" : "verified"
+          }.`,
+          {
+            title: coupon.isVerified
+              ? "Verification Removed"
+              : "Coupon Verified",
+          }
+        );
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Unable to update coupon.";
+
+        toast.error(message, { title: "Update Coupon Failed" });
+      } finally {
+        actionInProgressRef.current.delete(coupon.id);
+        setActionLoadingId(null);
+      }
+    };
+
+
+
+
+
+
+
+
+
 
   // Retry loading coupons
   const handleRetry = async () => {

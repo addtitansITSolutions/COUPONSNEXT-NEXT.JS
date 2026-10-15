@@ -133,25 +133,13 @@ const couponFieldsSchema = z.object({
 
   expiresAt: optionalDateSchema,
 
-  status: couponStatusSchema.default("draft"),
+  status: couponStatusSchema,
 
-  isActive: z
-    .boolean({
-      error: "isActive must be true or false",
-    })
-    .default(true),
+  isActive: z.boolean(),
 
-  isFeatured: z
-    .boolean({
-      error: "isFeatured must be true or false",
-    })
-    .default(false),
+  isFeatured: z.boolean(),
 
-  isVerified: z
-    .boolean({
-      error: "isVerified must be true or false",
-    })
-    .default(false),
+  isVerified: z.boolean(),
 
   sortOrder: z
     .number({
@@ -200,9 +188,16 @@ function validateCouponRules(
   }
 }
 
-export const createCouponSchema = couponFieldsSchema.superRefine(
-  validateCouponRules
-);
+export const createCouponSchema = couponFieldsSchema
+  .extend({
+    status: couponStatusSchema.default("draft"),
+    isActive: z.boolean().default(true),
+    isFeatured: z.boolean().default(false),
+    isVerified: z.boolean().default(false),
+    sortOrder: z.number().int().min(0).default(0),
+  })
+  .superRefine(validateCouponRules);
+
 export type CreateCouponInput = z.infer< typeof createCouponSchema >;
 
 
@@ -221,7 +216,6 @@ export type CreateCouponInput = z.infer< typeof createCouponSchema >;
 
 
 export const updateCouponSchema = couponFieldsSchema.partial().superRefine(validateCouponRules);
-
 export type UpdateCouponInput = z.infer< typeof updateCouponSchema >;
 
 
@@ -265,10 +259,16 @@ export const couponQuerySchema = z.object({
     .regex(/^[a-f\d]{24}$/i, "Please select a valid store")
     .optional(),
 
+  
   category: z
-    .string()
-    .regex(/^[a-f\d]{24}$/i, "Please select a valid category")
+    .union([
+      z.literal("__none__"),
+      z
+        .string()
+        .regex(/^[a-f\d]{24}$/i, "Please select a valid category"),
+    ])
     .optional(),
+
 
   type: couponTypeSchema.optional(),
 

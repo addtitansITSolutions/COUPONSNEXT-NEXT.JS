@@ -303,6 +303,289 @@ export async function PATCH( request: NextRequest, { params }: { params: Promise
 }
 
 
+
+//testing havings logs
+
+// export async function PATCH(
+//   request: NextRequest,
+//   { params }: { params: Promise<{ id: string }> }
+// ) {
+//   try {
+//     await requireAdmin();
+
+//     const { id } = await params;
+//     validateCouponId(id);
+
+//     const body = await request.json();
+
+//     console.log("[Coupon DEBUG] Incoming request body:", body);
+
+//     const validation = updateCouponSchema.safeParse(body);
+
+//     if (!validation.success) {
+//       console.error(
+//         "[Coupon DEBUG] Validation failed:",
+//         validation.error.flatten()
+//       );
+//       throw validation.error;
+//     }
+
+//     const couponData = validation.data;
+
+//     console.log("[Coupon DEBUG] Validated update data:", couponData);
+
+//     await connectDB();
+
+//     const existingCoupon = await Coupon.findById(id);
+
+//     if (!existingCoupon) {
+//       throw new ApiError(
+//         404,
+//         "Coupon not found",
+//         "COUPON_NOT_FOUND"
+//       );
+//     }
+
+//     console.log("[Coupon DEBUG] Before update:", {
+//       isFeatured: existingCoupon.isFeatured,
+//       isVerified: existingCoupon.isVerified,
+//     });
+
+//     const finalType = couponData.type ?? existingCoupon.type;
+
+//     const finalCode =
+//       couponData.code !== undefined
+//         ? couponData.code.trim()
+//         : existingCoupon.code?.trim();
+
+//     const finalStartsAt =
+//       couponData.startsAt !== undefined
+//         ? couponData.startsAt
+//         : existingCoupon.startsAt;
+
+//     const finalExpiresAt =
+//       couponData.expiresAt !== undefined
+//         ? couponData.expiresAt
+//         : existingCoupon.expiresAt;
+
+//     if (finalType === "code" && !finalCode) {
+//       throw new ApiError(
+//         400,
+//         "A coupon code is required for code-type coupons",
+//         "COUPON_CODE_REQUIRED"
+//       );
+//     }
+
+//     if (
+//       finalStartsAt &&
+//       finalExpiresAt &&
+//       new Date(finalExpiresAt).getTime() <=
+//         new Date(finalStartsAt).getTime()
+//     ) {
+//       throw new ApiError(
+//         400,
+//         "The expiry date must be later than the start date",
+//         "INVALID_COUPON_DATES"
+//       );
+//     }
+
+//     if (
+//       couponData.slug &&
+//       couponData.slug !== existingCoupon.slug
+//     ) {
+//       const duplicateSlug = await Coupon.exists({
+//         slug: couponData.slug,
+//         _id: { $ne: existingCoupon._id },
+//       });
+
+//       if (duplicateSlug) {
+//         throw new ApiError(
+//           409,
+//           "A coupon with this slug already exists",
+//           "COUPON_SLUG_EXISTS"
+//         );
+//       }
+//     }
+
+//     const finalStoreId =
+//       couponData.store ?? existingCoupon.store.toString();
+
+//     const store = await Store.findById(finalStoreId)
+//       .select("name slug logo isActive");
+
+//     if (!store) {
+//       throw new ApiError(
+//         404,
+//         "The selected store could not be found",
+//         "STORE_NOT_FOUND"
+//       );
+//     }
+
+//     const finalStatus =
+//       couponData.status ?? existingCoupon.status;
+
+//     if (finalStatus === "published" && !store.isActive) {
+//       throw new ApiError(
+//         400,
+//         "A coupon cannot be published while its store is inactive",
+//         "STORE_INACTIVE"
+//       );
+//     }
+
+//     const finalCategoryId =
+//       couponData.category !== undefined
+//         ? couponData.category
+//         : existingCoupon.category?.toString();
+
+//     if (finalCategoryId) {
+//       const category = await Category.findById(finalCategoryId)
+//         .select("name slug contentTypes isActive");
+
+//       if (!category) {
+//         throw new ApiError(
+//           404,
+//           "The selected category could not be found",
+//           "CATEGORY_NOT_FOUND"
+//         );
+//       }
+
+//       if (!category.contentTypes.includes("coupon")) {
+//         throw new ApiError(
+//           400,
+//           "The selected category does not support coupons",
+//           "CATEGORY_CONTENT_TYPE_INVALID"
+//         );
+//       }
+
+//       if (
+//         finalStatus === "published" &&
+//         !category.isActive
+//       ) {
+//         throw new ApiError(
+//           400,
+//           "A coupon cannot be published in an inactive category",
+//           "CATEGORY_INACTIVE"
+//         );
+//       }
+//     }
+
+//     const oldImage = existingCoupon.image;
+
+//     // Apply only the submitted fields.
+//     Object.assign(existingCoupon, couponData);
+
+//     console.log("[Coupon DEBUG] After Object.assign:", {
+//       isFeatured: existingCoupon.isFeatured,
+//       isVerified: existingCoupon.isVerified,
+//       updateKeys: Object.keys(couponData),
+//     });
+
+//     if (finalType === "deal") {
+//       existingCoupon.code = undefined;
+//     } else if (finalCode) {
+//       existingCoupon.code = finalCode;
+//     }
+
+//     await existingCoupon.validate();
+
+//     console.log("[Coupon DEBUG] After validate, before save:", {
+//       isFeatured: existingCoupon.isFeatured,
+//       isVerified: existingCoupon.isVerified,
+//     });
+
+//     await existingCoupon.save();
+
+//     console.log("[Coupon DEBUG] After save:", {
+//       isFeatured: existingCoupon.isFeatured,
+//       isVerified: existingCoupon.isVerified,
+//     });
+
+//     // Read directly from MongoDB without population or response mapping.
+//     const rawSavedCoupon = await Coupon.findById(id)
+//       .select("isFeatured isVerified")
+//       .lean();
+
+//     console.log("[Coupon DEBUG] Fresh database read:", {
+//       isFeatured: rawSavedCoupon?.isFeatured,
+//       isVerified: rawSavedCoupon?.isVerified,
+//     });
+
+//     if (oldImage && oldImage !== existingCoupon.image) {
+//       try {
+//         await deleteUploadedImage(oldImage);
+//       } catch (cleanupError) {
+//         console.error(
+//           "[Coupon image cleanup] Failed to delete old image:",
+//           cleanupError
+//         );
+//       }
+//     }
+
+//     const updatedCoupon = await populateCoupon(id);
+
+//     if (!updatedCoupon) {
+//       throw new ApiError(
+//         404,
+//         "Coupon was updated but could not be retrieved",
+//         "COUPON_RETRIEVAL_FAILED"
+//       );
+//     }
+
+//     console.log("[Coupon DEBUG] After populateCoupon:", {
+//       isFeatured: updatedCoupon.isFeatured,
+//       isVerified: updatedCoupon.isVerified,
+//     });
+
+//     const responseCoupon = couponResponse(updatedCoupon);
+
+//     console.log("[Coupon DEBUG] Final API response:", {
+//       isFeatured: responseCoupon.isFeatured,
+//       isVerified: responseCoupon.isVerified,
+//     });
+
+//     return NextResponse.json(
+//       {
+//         success: true,
+//         message: "Coupon updated successfully",
+//         coupon: responseCoupon,
+//       },
+//       {
+//         status: 200,
+//         headers: {
+//           "Cache-Control": "no-store",
+//         },
+//       }
+//     );
+//   } catch (error) {
+//     if (
+//       error &&
+//       typeof error === "object" &&
+//       "code" in error &&
+//       error.code === 11000
+//     ) {
+//       return handleApiError(
+//         new ApiError(
+//           409,
+//           "A coupon with this slug already exists",
+//           "COUPON_SLUG_EXISTS"
+//         ),
+//         request
+//       );
+//     }
+
+//     return handleApiError(error, request);
+//   }
+// }
+
+
+
+
+
+
+
+
+
+
 // DELETE /api/admin/coupons/[id]
 export async function DELETE( request: NextRequest, { params }: { params: Promise<{ id: string }> } ) {
   try {

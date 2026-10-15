@@ -254,8 +254,16 @@ export default function StoreFilters({ filters, onSearchChange, onCategoryChange
     filters.isFeatured !== "" ||
     filters.country.trim() !== "";
 
+
+
+
+  const truncateText = (text: string, maxLength: number = 25): string => {
+  if (!text) return "";
+  return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
+  };
+
   return (
-    <div className="flex flex-col gap-3 xxl:flex-row xxl:items-center">
+    <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
       {/* Search Input - Expands to occupy available space on xl screens */}
       <div className="relative min-w-[240px] flex-1">
         <Search
@@ -289,7 +297,7 @@ export default function StoreFilters({ filters, onSearchChange, onCategoryChange
 
           {categories.map((category) => (
             <option key={category.id} value={category.id}>
-              {category.name}
+              {truncateText(category.name)}
             </option>
           ))}
         </select>

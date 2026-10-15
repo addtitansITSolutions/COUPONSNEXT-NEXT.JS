@@ -311,7 +311,43 @@ export function useCoupons( options: UseCouponsOptions = {} ): UseCouponsReturn 
   );
 
   // Update coupon
-  const updateCoupon = useCallback( async ( id: string, updateData: Record<string, unknown> ): Promise<Coupon> => {
+  // const updateCoupon = useCallback( async ( id: string, updateData: Record<string, unknown> ): Promise<Coupon> => {
+  //     const response = await fetch(`/api/admin/coupons/${id}`, {
+  //       method: "PATCH",
+  //       credentials: "include",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify(updateData),
+  //     });
+
+  //     const data = await response.json();
+
+  //     if (!response.ok || !data.success) {
+  //       throw new Error(
+  //         getApiErrorMessageOnUi(data, "Failed to update coupon.")
+  //       );
+  //     }
+
+  //     await fetchCoupons();
+
+  //     return data.coupon as Coupon;
+  //   },
+  //   [fetchCoupons]
+  // );
+
+
+  
+  // Update coupon
+  const updateCoupon = useCallback(
+    async (
+      id: string,
+      updateData: Record<string, unknown>
+    ): Promise<Coupon> => {
+      // console.log("[Coupon update] Sending:", {
+      //   id,
+      //   updateData,
+      // });
       const response = await fetch(`/api/admin/coupons/${id}`, {
         method: "PATCH",
         credentials: "include",
@@ -323,18 +359,31 @@ export function useCoupons( options: UseCouponsOptions = {} ): UseCouponsReturn 
 
       const data = await response.json();
 
+      // console.log("[Coupon update] Server response:", {
+      //   isFeatured: data.coupon?.isFeatured,
+      //   isVerified: data.coupon?.isVerified,
+      // });
+
       if (!response.ok || !data.success) {
         throw new Error(
           getApiErrorMessageOnUi(data, "Failed to update coupon.")
         );
       }
 
-      await fetchCoupons();
+      const updatedCoupon = data.coupon as Coupon;
 
-      return data.coupon as Coupon;
+      // Update the matching coupon directly using the server response.
+      setCoupons((previousCoupons) =>
+        previousCoupons.map((coupon) =>
+          coupon.id === id ? updatedCoupon : coupon
+        )
+      );
+
+      return updatedCoupon;
     },
-    [fetchCoupons]
+    []
   );
+
 
   // Clear all filters
   const clearFilters = useCallback(() => { 

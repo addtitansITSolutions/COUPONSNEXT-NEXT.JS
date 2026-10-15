@@ -259,9 +259,14 @@ export async function GET(request: NextRequest) {
       filter.store = new Types.ObjectId(store);
     }
 
-    if (category) {
+    
+    if (category === "__none__") {
+      // Match coupons whose category is null or missing.
+      filter.category = null;
+    } else if (category) {
       filter.category = new Types.ObjectId(category);
     }
+
 
     if (type) {
       filter.type = type;
