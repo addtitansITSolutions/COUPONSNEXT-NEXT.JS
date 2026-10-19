@@ -491,11 +491,11 @@ export default function StoreForm({ store, onSubmit, onCancel, submitting = fals
           <h2 className="text-lg font-semibold text-gray-900">
             {isEditMode ? "Edit Store" : "Create Store"}
           </h2>
-          <p className="mt-1 text-sm text-gray-500">
+          {/* <p className="mt-1 text-sm text-gray-500">
             {isEditMode
               ? "Update store information and settings."
               : "Add a new store to CouponsNext."}
-          </p>
+          </p> */}
         </div>
 
         <button

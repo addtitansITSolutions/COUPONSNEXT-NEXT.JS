@@ -229,11 +229,17 @@ export async function PATCH( request: NextRequest, { params }: { params: Promise
       }
     }
 
-    // Remember the previous image before applying changes.
     const oldImage = existingCoupon.image;
 
-    // Apply only the fields provided in the PATCH request.
-    Object.assign(existingCoupon, couponData);
+    const { image, ...otherCouponData } = couponData;
+
+    Object.assign(existingCoupon, otherCouponData);
+
+    if (image === null) {
+      existingCoupon.image = undefined;
+    } else if (image !== undefined) {
+      existingCoupon.image = image;
+    }
 
     // Normalize the code and clear it for deal coupons.
     if (finalType === "deal") {

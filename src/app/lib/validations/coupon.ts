@@ -87,7 +87,20 @@ const couponFieldsSchema = z.object({
 
   code: optionalTextSchema(100, "Coupon code"),
 
-  image: optionalTextSchema(500, "Coupon image"),
+  image: z.preprocess(
+    (value) =>
+      typeof value === "string" && value.trim() === ""
+        ? undefined
+        : value,
+    z
+      .string({
+        error: "Coupon image must be a text value",
+      })
+      .trim()
+      .max(500, "Coupon image is too long")
+      .nullable()
+      .optional()
+  ),
 
   store: z
     .string({

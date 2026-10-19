@@ -27,42 +27,33 @@ export default function CategoriesPage() {
    * Filters
    */
   const [search, setSearch] = useState("");
-  const [contentType, setContentType] =
-    useState("");
+  const [contentType, setContentType] = useState("");
   const [status, setStatus] = useState("");
-  const [featured, setFeatured] =
-    useState("");
+  const [featured, setFeatured] = useState("");
 
   /*
    * UI state
    */
-  const [isAddCategoryOpen, setIsAddCategoryOpen] =
-    useState(false);
+  const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
 
-  const [editingCategory, setEditingCategory] =
-    useState<Category | null>(null);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
 
-  const [deletingCategory, setDeletingCategory] =
-    useState<Category | null>(null);
+  const [deletingCategory, setDeletingCategory] = useState<Category | null>(null);
 
   /*
    * Category data
    */
   const {
     categories,
-
     page,
     total,
     totalPages,
     limit,
-
     isLoading,
     isRetrying,
     fetchError,
-
     changePage,
     retry,
-
     setCategories,
   } = useCategories({
     search,

@@ -17,11 +17,13 @@ import { useCategories } from "@/lib/hooks/useCategories";
 interface CategoryDropdownProps {
   value: string;
   onChange: (value: string) => void;
+  contentType?: "store" | "coupon" | "blog" | "";
 }
 
 export default function CategoryDropdown({
   value,
   onChange,
+  contentType = "coupon",
 }: CategoryDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -41,7 +43,7 @@ export default function CategoryDropdown({
     retry,
   } = useCategories({
     search,
-    contentType: "",
+    contentType,
     status: "true",
     featured: "",
     limit: 5,

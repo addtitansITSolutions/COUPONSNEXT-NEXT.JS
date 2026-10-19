@@ -64,7 +64,7 @@ export function useCategories({ search,  contentType,  status, featured, limit =
         }
 
         if (contentType) {
-          params.set("type", contentType);
+          params.set("contentType", contentType);
         }
 
         if (status) {
