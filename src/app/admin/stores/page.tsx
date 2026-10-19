@@ -423,7 +423,7 @@ export default function StoresPage() {
             <button
               type="button"
               onClick={handleCreate}
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-[var(--brand-purple)] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[var(--accent-hover)]"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--brand-purple)] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[var(--accent-hover)]"
             >
               <Plus size={17} />
               Add Store
