@@ -8,6 +8,7 @@ import path from "node:path";
 export const UPLOAD_FOLDERS = [
   "logos",
   "banners",
+  "frontbanners",
   "coupons",
   "blogs",
 ] as const;
@@ -158,7 +159,9 @@ export async function deleteUploadedImage( imageUrl: string ): Promise<{ deleted
   }
 
   // Only accept our own public upload URLs.
-  const match = imageUrl.match( /^\/uploads\/(logos|banners|coupons|blogs)\/([a-f0-9-]+\.webp)$/i );
+  
+  const match = imageUrl.match(/^\/uploads\/(logos|banners|frontbanners|coupons|blogs)\/([a-f0-9-]+\.webp)$/i);
+
 
   if (!match) {
     throw new UploadError(

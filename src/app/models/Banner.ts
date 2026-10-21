@@ -75,15 +75,7 @@ const BannerSchema = new Schema<IBanner>(
       type: Number,
       default: 0,
       min: 0,
-    },
-
-    startsAt: {
-      type: Date,
-    },
-
-    expiresAt: {
-      type: Date,
-    },
+    }
   },
   {
     timestamps: true,
@@ -96,7 +88,6 @@ BannerSchema.index({
   sortOrder: 1,
 });
 
-const Banner =
-  models.Banner || model<IBanner>("Banner", BannerSchema);
+const Banner = models.Banner || model<IBanner>("Banner", BannerSchema);
 
 export default Banner;

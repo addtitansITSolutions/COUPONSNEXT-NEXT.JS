@@ -157,27 +157,10 @@ export default function CouponForm({ coupon, onSubmit, onCancel, submitting = fa
   const [isUploading, setIsUploading] = useState(false);
   const [imageRemoved, setImageRemoved] = useState(false);
   const uploadedImageUrlsRef = useRef<Set<string>>(new Set());
-  const pendingDeleteImageUrlsRef = useRef<Set<string>>(new Set());
-  const originalImageUrlRef = useRef(coupon?.image ?? "");
+  const skipUnmountCleanupRef = useRef(false);
   const couponIdRef = useRef(coupon?.id ?? coupon?._id ?? "");
   const isEditing = Boolean(coupon?.id ?? coupon?._id);
   const isBusy = submitting || isUploading;
-
-  useEffect(() => {
-    const nextCouponId = coupon?.id ?? coupon?._id ?? "";
-    if (couponIdRef.current !== nextCouponId) {
-      // Clean up temporary uploads from the previous unsaved form.
-      const previousUploads = [ ...uploadedImageUrlsRef.current ];
-      uploadedImageUrlsRef.current.clear();
-      if (previousUploads.length) { void cleanupImageUrls(previousUploads); }
-      pendingDeleteImageUrlsRef.current.clear();
-    }
-    couponIdRef.current = nextCouponId;
-    originalImageUrlRef.current = coupon?.image ?? "";
-    setForm(getInitialValues(coupon));
-    setErrors({});
-    setImageRemoved(false);
-  }, [coupon]);
 
   async function cleanupImageUrls( urls: string[] ): Promise<string[]> {
     const uniqueUrls = [...new Set(urls)].filter(isLocalUpload);
@@ -214,32 +197,9 @@ export default function CouponForm({ coupon, onSubmit, onCancel, submitting = fa
     });
   }
 
-  // function handleImageChange(url: string) {
-  //   const previousUrl = form.image;
-  //   const originalUrl = originalImageUrlRef.current;
-  //   // Do not delete an existing saved image until the coupon saves.
-  //   if ( previousUrl && previousUrl !== url && previousUrl === originalUrl && isLocalUpload(previousUrl)) {
-  //     pendingDeleteImageUrlsRef.current.add(previousUrl);
-  //   }
-  //   // Track newly uploaded images so unused ones can be cleaned up.
-  //   if ( url && url !== originalUrl && isLocalUpload(url) ) { uploadedImageUrlsRef.current.add(url); }
-  //   updateField("image", url);
-  // }
-
   function handleImageChange(url: string) {
-    const previousUrl = form.image;
-    const originalUrl = originalImageUrlRef.current;
-
-    if (
-      previousUrl &&
-      previousUrl !== url &&
-      previousUrl === originalUrl &&
-      isLocalUpload(previousUrl)
-    ) {
-      pendingDeleteImageUrlsRef.current.add(previousUrl);
-    }
-
-    if (url && url !== originalUrl && isLocalUpload(url)) {
+    // Track only newly uploaded local images.
+    if (url && isLocalUpload(url)) {
       uploadedImageUrlsRef.current.add(url);
     }
 
@@ -248,28 +208,25 @@ export default function CouponForm({ coupon, onSubmit, onCancel, submitting = fa
   }
 
   async function cleanupAfterSuccessfulSave(savedImage: string) {
-    const retainedUrls = new Set(savedImage ? [savedImage] : []);
-    const urlsToDelete = [
-      ...pendingDeleteImageUrlsRef.current,
-      ...uploadedImageUrlsRef.current,
-    ].filter((url) => !retainedUrls.has(url));
+    const retainedImage = savedImage.trim();
+
+    // Take all temporary uploads out of cleanup tracking first.
+    const uploadedUrls = [...uploadedImageUrlsRef.current];
+    uploadedImageUrlsRef.current.clear();
+
+    // Never delete the image that was successfully saved.
+    const urlsToDelete = uploadedUrls.filter(
+      (url) => url !== retainedImage
+    );
+
     const failedUrls = await cleanupImageUrls(urlsToDelete);
-    const failedSet = new Set(failedUrls);
-    pendingDeleteImageUrlsRef.current = new Set(
-      [...pendingDeleteImageUrlsRef.current].filter((url) =>
-        failedSet.has(url)
-      )
-    );
-    uploadedImageUrlsRef.current = new Set(
-      [...uploadedImageUrlsRef.current].filter((url) =>
-        failedSet.has(url)
-      )
-    );
-    if (savedImage) {
-      uploadedImageUrlsRef.current.delete(savedImage);
-      pendingDeleteImageUrlsRef.current.delete(savedImage);
+
+    // Keep only failed cleanup attempts.
+    // The saved image must NEVER be tracked as temporary.
+    for (const url of failedUrls) {
+      uploadedImageUrlsRef.current.add(url);
     }
-    originalImageUrlRef.current = savedImage;
+
     if (failedUrls.length) {
       toast.error(
         "Coupon saved, but some unused images could not be deleted.",
@@ -286,10 +243,16 @@ export default function CouponForm({ coupon, onSubmit, onCancel, submitting = fa
     }
   }
 
-  // Remove unsaved temporary uploads when leaving the form.
+  // Clean up temporary uploads only when leaving without a successful save.
   useEffect(() => {
     return () => {
+      if (skipUnmountCleanupRef.current) {
+        return;
+      }
+
       const urls = [...uploadedImageUrlsRef.current];
+      uploadedImageUrlsRef.current.clear();
+
       if (urls.length) {
         void cleanupImageUrls(urls);
       }
@@ -418,9 +381,12 @@ export default function CouponForm({ coupon, onSubmit, onCancel, submitting = fa
       payload.expiresAt = new Date(form.expiresAt).toISOString();
     }
     try {
+      // Prevent unmount cleanup from deleting uploads while saving.
+      skipUnmountCleanupRef.current = true;
       await onSubmit(payload);
       await cleanupAfterSuccessfulSave(form.image.trim());
     } catch (error : any) {
+      skipUnmountCleanupRef.current = false;
       const message =
         error instanceof Error
           ? error.message
