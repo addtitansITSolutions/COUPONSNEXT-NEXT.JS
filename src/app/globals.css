@@ -78,3 +78,227 @@ button {
   background: var(--brand-purple);
   color: var(--brand-white);
 }
+
+
+
+
+
+
+/* Blog editor container */
+.blog-editor-shell {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.blog-editor-shell:focus-within {
+  border-color: var(--brand-purple);
+  box-shadow: 0 0 0 3px rgb(124 58 237 / 10%);
+}
+
+.blog-editor-shell.has-error {
+  border-color: #f87171;
+  box-shadow: 0 0 0 3px rgb(248 113 113 / 10%);
+}
+
+.blog-editor-shell.is-disabled {
+  opacity: 0.7;
+}
+
+/* Toolbar */
+.blog-editor-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  padding: 8px;
+  border-bottom: 1px solid var(--border);
+  background: #f8fafc;
+}
+
+.blog-editor-toolbar-group,
+.blog-editor-toolbar-history {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.blog-editor-toolbar-history {
+  margin-left: auto;
+}
+
+.blog-editor-toolbar-divider {
+  width: 1px;
+  height: 24px;
+  margin: 0 3px;
+  background: var(--border);
+}
+
+.blog-editor-toolbar-button {
+  display: inline-flex;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: #475569;
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease;
+}
+
+.blog-editor-toolbar-button:hover:not(:disabled) {
+  background: #ede9fe;
+  color: var(--brand-purple);
+}
+
+.blog-editor-toolbar-button.is-active {
+  border-color: #ddd6fe;
+  background: #ede9fe;
+  color: var(--brand-purple);
+}
+
+.blog-editor-toolbar-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+/* Editable article content */
+.blog-content-editor .tiptap {
+  min-height: 320px;
+  padding: 18px;
+  outline: none;
+  color: var(--foreground);
+  font-size: 14px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+
+.blog-content-editor .tiptap > * + * {
+  margin-top: 12px;
+}
+
+.blog-content-editor .tiptap p {
+  margin-top: 12px;
+  margin-bottom: 12px;
+}
+
+.blog-content-editor .tiptap h2 {
+  margin-top: 28px;
+  margin-bottom: 12px;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.blog-content-editor .tiptap h3 {
+  margin-top: 24px;
+  margin-bottom: 10px;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.blog-content-editor .tiptap ul {
+  padding-left: 24px;
+  list-style: disc;
+}
+
+.blog-content-editor .tiptap ol {
+  padding-left: 24px;
+  list-style: decimal;
+}
+
+.blog-content-editor .tiptap li {
+  padding-left: 3px;
+}
+
+.blog-content-editor .tiptap li p {
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
+.blog-content-editor .tiptap blockquote {
+  margin: 18px 0;
+  border-left: 3px solid var(--brand-purple);
+  padding-left: 16px;
+  color: var(--muted);
+}
+
+.blog-content-editor .tiptap a {
+  color: var(--brand-purple);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.blog-content-editor .tiptap strong {
+  font-weight: 700;
+}
+
+.blog-content-editor .tiptap em {
+  font-style: italic;
+}
+
+.blog-content-editor .tiptap u {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.blog-content-editor .tiptap s {
+  text-decoration: line-through;
+}
+
+.blog-content-editor .tiptap p.is-editor-empty:first-child::before {
+  float: left;
+  height: 0;
+  color: #94a3b8;
+  content: "Start writing your blog article...";
+  pointer-events: none;
+}
+
+/* Footer */
+.blog-editor-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-top: 1px solid var(--border);
+  background: #f8fafc;
+  padding: 10px 16px;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.blog-editor-error {
+  padding: 8px 16px;
+  color: #dc2626;
+  font-size: 14px;
+}
+
+@media (max-width: 480px) {
+  .blog-content-editor .tiptap {
+    min-height: 280px;
+    padding: 14px;
+  }
+
+  .blog-editor-toolbar {
+    gap: 3px;
+  }
+
+  .blog-editor-toolbar-divider {
+    margin: 0 1px;
+  }
+
+  .blog-editor-toolbar-button {
+    width: 31px;
+    height: 31px;
+  }
+
+  .blog-editor-toolbar-history {
+    margin-left: 0;
+  }
+}

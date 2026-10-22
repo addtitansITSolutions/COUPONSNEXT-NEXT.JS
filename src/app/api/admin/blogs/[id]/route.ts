@@ -121,34 +121,25 @@ export async function PATCH(
 ) {
   try {
     await requireAdmin();
-
     const { id } = await params;
     validateBlogId(id);
-
     const body = await request.json();
     const validation = updateBlogSchema.safeParse(body);
-
     if (!validation.success) {
       throw validation.error;
     }
-
     const blogData = validation.data;
-
     await connectDB();
-
     const existingBlog = await Blog.findById(id);
-
     if (!existingBlog) {
       throw new ApiError(404, "Blog not found", "BLOG_NOT_FOUND");
     }
-
     // Check slug uniqueness against other blogs.
     if (blogData.slug && blogData.slug !== existingBlog.slug) {
       const duplicateSlug = await Blog.exists({
         slug: blogData.slug,
         _id: { $ne: existingBlog._id },
       });
-
       if (duplicateSlug) {
         throw new ApiError(
           409,
@@ -161,24 +152,12 @@ export async function PATCH(
     // Determine the final values after applying this update.
     const finalStatus = blogData.status ?? existingBlog.status;
     const finalIsActive = blogData.isActive ?? existingBlog.isActive;
-
-    const finalAuthorId =
-      blogData.author ?? existingBlog.author.toString();
-
-    const finalCategoryId =
-      blogData.category !== undefined
-        ? blogData.category
-        : existingBlog.category?.toString();
-
-    const finalScheduledAt =
-      blogData.scheduledAt !== undefined
-        ? blogData.scheduledAt
-        : existingBlog.scheduledAt;
+    const finalAuthorId = blogData.author ?? existingBlog.author.toString();
+    const finalCategoryId = blogData.category !== undefined ? blogData.category : existingBlog.category?.toString();
+    const finalScheduledAt = blogData.scheduledAt !== undefined ? blogData.scheduledAt : existingBlog.scheduledAt;
 
     // Validate the author.
-    const author = await User.findById(finalAuthorId).select(
-      "name email role isActive"
-    );
+    const author = await User.findById(finalAuthorId).select( "name email role isActive" );
 
     if (!author || !author.isActive) {
       throw new ApiError(
@@ -188,12 +167,17 @@ export async function PATCH(
       );
     }
 
+    if (author.role !== "admin") {
+      throw new ApiError(
+        400,
+        "Only an admin can be assigned as a blog author",
+        "AUTHOR_ROLE_INVALID"
+      );
+    }
+
     // Validate the category if one is assigned.
     if (finalCategoryId) {
-      const category = await Category.findById(finalCategoryId).select(
-        "name slug contentTypes isActive"
-      );
-
+      const category = await Category.findById(finalCategoryId).select("name slug contentTypes isActive");
       if (!category) {
         throw new ApiError(
           404,
@@ -201,7 +185,6 @@ export async function PATCH(
           "CATEGORY_NOT_FOUND"
         );
       }
-
       if (!category.contentTypes.includes("blog")) {
         throw new ApiError(
           400,
@@ -209,12 +192,7 @@ export async function PATCH(
           "CATEGORY_CONTENT_TYPE_INVALID"
         );
       }
-
-      if (
-        finalStatus === "published" &&
-        finalIsActive &&
-        !category.isActive
-      ) {
+      if ( finalStatus === "published" && finalIsActive && !category.isActive ) {
         throw new ApiError(
           400,
           "An active, published blog cannot use an inactive category",
@@ -222,7 +200,6 @@ export async function PATCH(
         );
       }
     }
-
     // Validate scheduled blogs.
     if (finalStatus === "scheduled" && !finalScheduledAt) {
       throw new ApiError(
@@ -232,13 +209,24 @@ export async function PATCH(
       );
     }
 
-    // Keep scheduledAt and publishedAt consistent when a scheduled
-    // date is explicitly changed.
-    if (
-      finalStatus === "scheduled" &&
-      blogData.scheduledAt !== undefined
-    ) {
-      blogData.publishedAt = blogData.scheduledAt;
+    // Manage publication timestamps on the server.
+    // Never allow the client to choose publishedAt.
+    const wasPublished = existingBlog.status === "published";
+    const previousPublishedAt = existingBlog.publishedAt;
+
+    if (finalStatus === "published") {
+      if (!wasPublished || !previousPublishedAt) {
+        // First publication or publishing again after leaving
+        // the published status.
+        blogData.publishedAt = new Date();
+      } else {
+        // Editing an already published blog must not reset its date.
+        blogData.publishedAt = previousPublishedAt;
+      }
+    } else {
+      // Preserve a previous publication date when moving to draft
+      // or scheduled. A never-published blog remains unpublished.
+      delete blogData.publishedAt;
     }
 
     // Remember the existing image before changing the document.
@@ -277,9 +265,7 @@ export async function PATCH(
         );
       }
     }
-
     const updatedBlog = await populateBlog(id);
-
     if (!updatedBlog) {
       throw new ApiError(
         404,
@@ -321,6 +307,7 @@ export async function PATCH(
     return handleApiError(error, request);
   }
 }
+
 
 // DELETE /api/admin/blogs/[id]
 export async function DELETE(

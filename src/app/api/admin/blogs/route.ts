@@ -15,188 +15,6 @@ function escapeRegex(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-export async function POST(request: NextRequest) {
-  try {
-    await requireAdmin();
-    const body = await request.json();
-    const validation = createBlogSchema.safeParse(body);
-    if (!validation.success) {
-      throw validation.error;
-    }
-    const blogData = validation.data;
-    await connectDB();
-    // Verify that the selected author exists and is active.
-    const author = await User.findById(blogData.author).select("name email role isActive").lean();
-    if (!author) {
-      throw new ApiError(
-        404,
-        "The selected author could not be found",
-        "AUTHOR_NOT_FOUND"
-      );
-    }
-
-    if (!author.isActive) {
-      throw new ApiError(
-        400,
-        "An inactive user cannot be assigned as a blog author",
-        "AUTHOR_INACTIVE"
-      );
-    }
-
-    if(author.role !== "admin"){
-        throw new ApiError(
-        400,
-        "Only admin can be assigned as a blog author",
-        "AUTHOR_INACTIVE"
-      );
-    }
-
-    // Verify that the selected category supports blogs.
-    if (blogData.category) {
-      const category = await Category.findById(blogData.category)
-        .select("name slug isActive contentTypes")
-        .lean();
-
-      if (!category) {
-        throw new ApiError(
-          404,
-          "The selected category could not be found",
-          "CATEGORY_NOT_FOUND"
-        );
-      }
-
-      if (!category.contentTypes.includes("blog")) {
-        throw new ApiError(
-          400,
-          "The selected category does not support blogs",
-          "INVALID_CATEGORY_TYPE"
-        );
-      }
-
-      if ( blogData.status !== "draft" && !category.isActive) {
-        throw new ApiError(
-          400,
-          "Blogs cannot be published in an inactive category",
-          "CATEGORY_INACTIVE"
-        );
-      }
-    }
-
-    // Prevent duplicate slugs.
-    const existingBlog = await Blog.exists({ slug: blogData.slug, });
-
-    if (existingBlog) {
-      throw new ApiError(
-        409,
-        "A blog with this slug already exists",
-        "BLOG_SLUG_EXISTS"
-      );
-    }
-
-    const blog = await Blog.create({
-      ...blogData,
-      // The counter is always initialized by the server.
-      viewCount: 0,
-    });
-
-    await blog.populate([
-      {
-        path: "author",
-        select: "name email",
-      },
-      {
-        path: "category",
-        select: "name slug",
-      },
-    ]);
-
-    const result = blog.toObject();
-
-    const populatedAuthor = result.author as unknown as {
-      _id: Types.ObjectId;
-      name: string;
-      email: string;
-    } | null;
-
-    const populatedCategory = result.category as unknown as {
-      _id: Types.ObjectId;
-      name: string;
-      slug: string;
-    } | null;
-
-    return NextResponse.json(
-      {
-        success: true,
-        message: "Blog created successfully",
-        blog: {
-          id: blog._id.toString(),
-          title: result.title,
-          slug: result.slug,
-          excerpt: result.excerpt,
-          content: result.content,
-          featuredImage: result.featuredImage,
-          featuredImageAlt: result.featuredImageAlt,
-          author: populatedAuthor
-            ? {
-                id: populatedAuthor._id.toString(),
-                name: populatedAuthor.name,
-                email: populatedAuthor.email,
-              }
-            : null,
-          category: populatedCategory
-            ? {
-                id: populatedCategory._id.toString(),
-                name: populatedCategory.name,
-                slug: populatedCategory.slug,
-              }
-            : null,
-          tags: result.tags,
-          status: result.status,
-          isActive: result.isActive,
-          isFeatured: result.isFeatured,
-          sortOrder: result.sortOrder,
-          viewCount: result.viewCount,
-          publishedAt: result.publishedAt,
-          scheduledAt: result.scheduledAt,
-          seoTitle: result.seoTitle,
-          seoDescription: result.seoDescription,
-          canonicalUrl: result.canonicalUrl,
-          noIndex: result.noIndex,
-          ogTitle: result.ogTitle,
-          ogDescription: result.ogDescription,
-          ogImage: result.ogImage,
-          createdAt: result.createdAt,
-          updatedAt: result.updatedAt,
-        },
-      },
-      {
-        status: 201,
-        headers: {
-          "Cache-Control": "no-store",
-        },
-      }
-    );
-  } catch (error) {
-    if (
-      error &&
-      typeof error === "object" &&
-      "code" in error &&
-      error.code === 11000
-    ) {
-      return handleApiError(
-        new ApiError(
-          409,
-          "A blog with this slug already exists",
-          "BLOG_SLUG_EXISTS"
-        ),
-        request
-      );
-    }
-
-    return handleApiError(error, request);
-  }
-}
-
 export async function GET(request: NextRequest) {
   try {
     await requireAdmin();
@@ -352,6 +170,194 @@ export async function GET(request: NextRequest) {
       }
     );
   } catch (error) {
+    return handleApiError(error, request);
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    await requireAdmin();
+    const body = await request.json();
+    const validation = createBlogSchema.safeParse(body);
+    if (!validation.success) {
+      throw validation.error;
+    }
+    const blogData = validation.data;
+    await connectDB();
+    // Verify that the selected author exists and is active.
+    const author = await User.findById(blogData.author).select("name email role isActive").lean();
+    if (!author) {
+      throw new ApiError(
+        404,
+        "The selected author could not be found",
+        "AUTHOR_NOT_FOUND"
+      );
+    }
+
+    if (!author.isActive) {
+      throw new ApiError(
+        400,
+        "An inactive user cannot be assigned as a blog author",
+        "AUTHOR_INACTIVE"
+      );
+    }
+
+    if(author.role !== "admin"){
+        throw new ApiError(
+        400,
+        "Only admin can be assigned as a blog author",
+        "AUTHOR_INACTIVE"
+      );
+    }
+
+    // Verify that the selected category supports blogs.
+    if (blogData.category) {
+      const category = await Category.findById(blogData.category)
+        .select("name slug isActive contentTypes")
+        .lean();
+
+      if (!category) {
+        throw new ApiError(
+          404,
+          "The selected category could not be found",
+          "CATEGORY_NOT_FOUND"
+        );
+      }
+
+      if (!category.contentTypes.includes("blog")) {
+        throw new ApiError(
+          400,
+          "The selected category does not support blogs",
+          "INVALID_CATEGORY_TYPE"
+        );
+      }
+
+      if ( blogData.status !== "draft" && !category.isActive) {
+        throw new ApiError(
+          400,
+          "Blogs cannot be published in an inactive category",
+          "CATEGORY_INACTIVE"
+        );
+      }
+    }
+
+    
+    if (blogData.status === "published") {
+      blogData.publishedAt = new Date();
+    }
+
+
+    // Prevent duplicate slugs.
+    const existingBlog = await Blog.exists({ slug: blogData.slug, });
+
+    if (existingBlog) {
+      throw new ApiError(
+        409,
+        "A blog with this slug already exists",
+        "BLOG_SLUG_EXISTS"
+      );
+    }
+
+    const blog = await Blog.create({
+      ...blogData,
+      // The counter is always initialized by the server.
+      viewCount: 0,
+    });
+
+    await blog.populate([
+      {
+        path: "author",
+        select: "name email",
+      },
+      {
+        path: "category",
+        select: "name slug",
+      },
+    ]);
+
+    const result = blog.toObject();
+
+    const populatedAuthor = result.author as unknown as {
+      _id: Types.ObjectId;
+      name: string;
+      email: string;
+    } | null;
+
+    const populatedCategory = result.category as unknown as {
+      _id: Types.ObjectId;
+      name: string;
+      slug: string;
+    } | null;
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Blog created successfully",
+        blog: {
+          id: blog._id.toString(),
+          title: result.title,
+          slug: result.slug,
+          excerpt: result.excerpt,
+          content: result.content,
+          featuredImage: result.featuredImage,
+          featuredImageAlt: result.featuredImageAlt,
+          author: populatedAuthor
+            ? {
+                id: populatedAuthor._id.toString(),
+                name: populatedAuthor.name,
+                email: populatedAuthor.email,
+              }
+            : null,
+          category: populatedCategory
+            ? {
+                id: populatedCategory._id.toString(),
+                name: populatedCategory.name,
+                slug: populatedCategory.slug,
+              }
+            : null,
+          tags: result.tags,
+          status: result.status,
+          isActive: result.isActive,
+          isFeatured: result.isFeatured,
+          sortOrder: result.sortOrder,
+          viewCount: result.viewCount,
+          publishedAt: result.publishedAt,
+          scheduledAt: result.scheduledAt,
+          seoTitle: result.seoTitle,
+          seoDescription: result.seoDescription,
+          canonicalUrl: result.canonicalUrl,
+          noIndex: result.noIndex,
+          ogTitle: result.ogTitle,
+          ogDescription: result.ogDescription,
+          ogImage: result.ogImage,
+          createdAt: result.createdAt,
+          updatedAt: result.updatedAt,
+        },
+      },
+      {
+        status: 201,
+        headers: {
+          "Cache-Control": "no-store",
+        },
+      }
+    );
+  } catch (error) {
+    if (
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      error.code === 11000
+    ) {
+      return handleApiError(
+        new ApiError(
+          409,
+          "A blog with this slug already exists",
+          "BLOG_SLUG_EXISTS"
+        ),
+        request
+      );
+    }
+
     return handleApiError(error, request);
   }
 }
