@@ -19,7 +19,6 @@ import type { JSONContent } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Underline from "@tiptap/extension-underline";
-
 import type { BlogContentNode } from "@/lib/hooks/useBlogs";
 
 interface BlogContentEditorProps {
@@ -43,13 +42,7 @@ interface ToolbarButtonProps {
   disabled?: boolean;
 }
 
-function ToolbarButton({
-  label,
-  icon,
-  onClick,
-  active = false,
-  disabled = false,
-}: ToolbarButtonProps) {
+function ToolbarButton({ label, icon, onClick, active = false, disabled = false, }: ToolbarButtonProps) {
   return (
     <button
       type="button"
@@ -59,22 +52,14 @@ function ToolbarButton({
       disabled={disabled}
       onMouseDown={(event) => event.preventDefault()}
       onClick={onClick}
-      className={`blog-editor-toolbar-button ${
-        active ? "is-active" : ""
-      }`}
+      className={`blog-editor-toolbar-button ${ active ? "is-active" : "" }`}
     >
       {icon}
     </button>
   );
 }
 
-export default function BlogContentEditor({
-  value,
-  onChange,
-  error,
-  disabled = false,
-  onClearError,
-}: BlogContentEditorProps) {
+export default function BlogContentEditor({ value, onChange, error, disabled = false, onClearError, }: BlogContentEditorProps) {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -109,24 +94,20 @@ export default function BlogContentEditor({
 
   useEffect(() => {
     if (!editor) return;
-
     editor.setEditable(!disabled);
   }, [editor, disabled]);
 
+  
   useEffect(() => {
     if (!editor) return;
-
-    const nextContent = (value ?? EMPTY_DOCUMENT) as JSONContent;
-
-    // Do not reset the cursor when the document has not changed.
-    if (
-      JSON.stringify(editor.getJSON()) !== JSON.stringify(nextContent)
-    ) {
-      editor.commands.setContent(nextContent, {
+    const nextContent = value ?? EMPTY_DOCUMENT;
+    if (JSON.stringify(editor.getJSON()) !== JSON.stringify(nextContent)) {
+      editor.commands.setContent(nextContent as JSONContent, {
         emitUpdate: false,
       });
     }
   }, [editor, value]);
+
 
   if (!editor) {
     return (
@@ -145,24 +126,16 @@ export default function BlogContentEditor({
     .filter(Boolean).length;
 
   
-    function addLink() {
+function addLink() {
     const currentEditor = editor;
-
     if (!currentEditor || disabled) return;
-
     const previousUrl = currentEditor.getAttributes("link").href as
         | string
         | undefined;
 
-    const input = window.prompt(
-        "Enter the link URL:",
-        previousUrl ?? "https://"
-    );
-
+    const input = window.prompt( "Enter the link URL:", previousUrl ?? "https://" );
     if (input === null) return;
-
     const url = input.trim();
-
     if (!url) {
         currentEditor
         .chain()
@@ -170,13 +143,10 @@ export default function BlogContentEditor({
         .extendMarkRange("link")
         .unsetLink()
         .run();
-
         return;
     }
-
     try {
         const parsedUrl = new URL(url);
-
         if (!["http:", "https:"].includes(parsedUrl.protocol)) {
         window.alert("Please enter an HTTP or HTTPS URL.");
         return;
@@ -185,7 +155,6 @@ export default function BlogContentEditor({
         window.alert("Please enter a valid URL.");
         return;
     }
-
     currentEditor
         .chain()
         .focus()
@@ -196,11 +165,7 @@ export default function BlogContentEditor({
 
 
   return (
-    <div
-      className={`blog-editor-shell ${
-        error ? "has-error" : ""
-      } ${disabled ? "is-disabled" : ""}`}
-    >
+    <div className={`blog-editor-shell ${ error ? "has-error" : "" } ${disabled ? "is-disabled" : ""}`} >
       {/* Simple formatting toolbar */}
       <div className="blog-editor-toolbar">
         <div className="blog-editor-toolbar-group">
@@ -211,7 +176,6 @@ export default function BlogContentEditor({
             disabled={disabled}
             onClick={() => editor.chain().focus().toggleBold().run()}
           />
-
           <ToolbarButton
             label="Italic"
             icon={<Italic size={17} />}
@@ -219,7 +183,6 @@ export default function BlogContentEditor({
             disabled={disabled}
             onClick={() => editor.chain().focus().toggleItalic().run()}
           />
-
           <ToolbarButton
             label="Underline"
             icon={<UnderlineIcon size={17} />}

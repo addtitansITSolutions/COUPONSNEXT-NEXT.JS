@@ -4,6 +4,7 @@ import {
   FileText,
   Plus,
   RefreshCw,
+  Loader2
 } from "lucide-react";
 
 import BlogDeleteModal from "@/components/admin/blog/BlogDeleteModal";
@@ -36,6 +37,7 @@ export default function BlogsPage() {
     setPage,
     setLimit,
     refresh,
+    getBlog,
     deleteBlog,
     updateBlog,
     clearFilters,
@@ -48,7 +50,8 @@ export default function BlogsPage() {
   const [deletingBlog, setDeletingBlog] = useState<Blog | null>(null);
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
   const [formSubmitting, setFormSubmitting] = useState(false);
-
+  const [fetchingBlog, setFetchingBlog] = useState(false);
+  const isEditingForm = fetchingBlog || Boolean(editingBlog);
   const actionInProgressRef = useRef<Set<string>>(new Set());
 
   // Determine whether any filters are active.
@@ -69,15 +72,36 @@ export default function BlogsPage() {
     setShowForm(true);
   };
 
-  // Open edit form using the blog already fetched in the list.
-  const handleEdit = (blog: Blog) => {
-    setEditingBlog(blog);
-    setShowForm(true);
+  // Fetch the complete blog only when opening Edit.
+  const handleEdit = async (blog: Blog) => {
+    try {
+      setFetchingBlog(true);
+      setEditingBlog(null);
+      setShowForm(true);
+
+      const fullBlog = await getBlog(blog.id);
+
+      setEditingBlog(fullBlog);
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Unable to load blog details.";
+
+      toast.error(message, {
+        title: "Unable to Load Blog",
+      });
+
+      setShowForm(false);
+      setEditingBlog(null);
+    } finally {
+      setFetchingBlog(false);
+    }
   };
 
   // Close create/edit form.
   const handleCloseForm = () => {
-    if (formSubmitting) {
+    if (formSubmitting || fetchingBlog) {
       return;
     }
 
@@ -86,9 +110,7 @@ export default function BlogsPage() {
   };
 
   // Create or update a blog.
-  const handleSubmitForm = async (
-    formData: Record<string, unknown>
-  ) => {
+  const handleSubmitForm = async ( formData: Record<string, unknown> ) => {
     const isEditing = Boolean(editingBlog);
 
     try {
@@ -124,10 +146,6 @@ export default function BlogsPage() {
           "Unable to create blog."
         );
 
-        toast.error(message, {
-          title: "Create Blog Failed",
-        });
-
         throw new Error(message);
       }
 
@@ -142,9 +160,9 @@ export default function BlogsPage() {
       setEditingBlog(null);
     } catch (error) {
       if (isEditing && error instanceof Error) {
-        toast.error(error.message, {
-          title: "Update Blog Failed",
-        });
+        // toast.error(error.message, {
+        //   title: "Update Blog Failed",
+        // });
       }
 
       throw error;
@@ -293,7 +311,7 @@ export default function BlogsPage() {
               <button
                 type="button"
                 onClick={handleCloseForm}
-                disabled={formSubmitting}
+                disabled={formSubmitting || fetchingBlog}
                 className="text-sm font-medium text-gray-500 transition hover:text-gray-900 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Blogs
@@ -302,13 +320,13 @@ export default function BlogsPage() {
               <span className="text-gray-300">/</span>
 
               <span className="text-sm font-medium text-gray-900">
-                {editingBlog ? "Edit Blog" : "Create Blog"}
+                {isEditingForm ? "Edit Blog" : "Create Blog"}
               </span>
             </div>
 
-            <h1 className="mt-2 text-2xl font-bold tracking-tight text-gray-900">
+            {/* <h1 className="mt-2 text-2xl font-bold tracking-tight text-gray-900">
               {editingBlog ? "Edit Blog" : "Create Blog"}
-            </h1>
+            </h1> */}
 
             <p className="mt-1 text-sm text-gray-500">
               {editingBlog
@@ -320,12 +338,30 @@ export default function BlogsPage() {
 
         {/* Form */}
         <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6 lg:p-8">
-          <BlogForm
-            blog={editingBlog}
-            onSubmit={handleSubmitForm}
-            onCancel={handleCloseForm}
-            submitting={formSubmitting}
-          />
+          {fetchingBlog ? (
+            <div className="flex min-h-[400px] flex-col items-center justify-center">
+              <Loader2
+                size={32}
+                className="animate-spin text-[var(--brand-purple)]"
+              />
+
+              <p className="mt-4 text-sm font-medium text-gray-700">
+                Loading blog details...
+              </p>
+
+              <p className="mt-1 text-sm text-gray-500">
+                Please wait while we prepare the editor.
+              </p>
+            </div>
+          ) : (
+            <BlogForm
+              key={editingBlog?.id ?? "new-blog"}
+              blog={editingBlog}
+              onSubmit={handleSubmitForm}
+              onCancel={handleCloseForm}
+              submitting={formSubmitting}
+            />
+          )}
         </div>
       </div>
     );

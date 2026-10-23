@@ -48,14 +48,11 @@ const EMPTY_CONTENT: BlogContentNode = {
   content: [{ type: "paragraph" }],
 };
 
-const inputClass =
-  "w-full rounded-lg border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--foreground)] outline-none transition placeholder:text-slate-400 focus:border-[var(--brand-purple)] focus:ring-2 focus:ring-[var(--brand-purple)]/15 disabled:cursor-not-allowed disabled:bg-slate-50";
+const inputClass = "w-full rounded-lg border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--foreground)] outline-none transition placeholder:text-slate-400 focus:border-[var(--brand-purple)] focus:ring-2 focus:ring-[var(--brand-purple)]/15 disabled:cursor-not-allowed disabled:bg-slate-50";
 
-const labelClass =
-  "mb-1.5 block text-sm font-medium text-[var(--foreground)]";
+const labelClass = "mb-1.5 block text-sm font-medium text-[var(--foreground)]";
 
-const sectionClass =
-  "rounded-xl border border-[var(--border)] bg-white p-5 sm:p-6";
+const sectionClass = "rounded-xl border border-[var(--border)] bg-white p-5 sm:p-6";
 
 const emptyValues: BlogFormValues = {
   title: "",
@@ -156,35 +153,23 @@ function getContentText(node: BlogContentNode): string {
   return result.trim();
 }
 
-export default function BlogForm({
-  blog,
-  onSubmit,
-  onCancel,
-  submitting = false,
-}: BlogFormProps) {
-  const [form, setForm] = useState<BlogFormValues>(() =>
-    getInitialValues(blog)
-  );
-
+export default function BlogForm({ blog, onSubmit, onCancel, submitting = false }: BlogFormProps) {
+  const [form, setForm] = useState<BlogFormValues>(() => getInitialValues(blog) );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isUploading, setIsUploading] = useState(false);
   const [imageRemoved, setImageRemoved] = useState(false);
   const [slugTouched, setSlugTouched] = useState(Boolean(blog?.slug));
-
   const uploadedImageUrlsRef = useRef<Set<string>>(new Set());
   const skipUnmountCleanupRef = useRef(false);
-
   const isEditing = Boolean(blog?.id);
   const isBusy = submitting || isUploading;
-
   // Reset the form when switching to a different blog.
   useEffect(() => {
     setForm(getInitialValues(blog));
     setErrors({});
     setImageRemoved(false);
     setSlugTouched(Boolean(blog?.slug));
-  }, [blog?.id]);
-
+  }, [blog]);
   async function cleanupImageUrls(urls: string[]): Promise<string[]> {
     const uniqueUrls = [...new Set(urls)].filter(isLocalUpload);
     const failedUrls: string[] = [];
@@ -210,7 +195,6 @@ export default function BlogForm({
 
     return failedUrls;
   }
-
   function updateField<K extends keyof BlogFormValues>(
     field: K,
     value: BlogFormValues[K]
@@ -229,7 +213,6 @@ export default function BlogForm({
       return next;
     });
   }
-
   function clearFieldError(field: string) {
     setErrors((previous) => {
       if (!previous[field]) return previous;
@@ -240,7 +223,6 @@ export default function BlogForm({
       return next;
     });
   }
-
   function handleTitleChange(value: string) {
     updateField("title", value);
 
@@ -260,7 +242,6 @@ export default function BlogForm({
       }));
     }
   }
-
   function handleImageChange(url: string) {
     // Track only new local uploads, never existing saved images.
     if (url && isLocalUpload(url)) {
@@ -274,7 +255,6 @@ export default function BlogForm({
       updateField("featuredImageAlt", "");
     }
   }
-
   async function cleanupAfterSuccessfulSave(savedImage: string) {
     const retainedImage = savedImage.trim();
 
@@ -301,7 +281,6 @@ export default function BlogForm({
       );
     }
   }
-
   async function cleanupTemporaryUploads() {
     const urls = [...uploadedImageUrlsRef.current];
     uploadedImageUrlsRef.current.clear();
@@ -314,7 +293,6 @@ export default function BlogForm({
       }
     }
   }
-
   // Clean temporary uploads when leaving without saving.
   useEffect(() => {
     return () => {
@@ -328,7 +306,6 @@ export default function BlogForm({
       }
     };
   }, []);
-
   function validate(): boolean {
     const nextErrors: Record<string, string> = {};
 
@@ -379,8 +356,12 @@ export default function BlogForm({
       nextErrors.author = "Please select a valid author.";
     }
 
-    if (form.category && !/^[a-f\d]{24}$/i.test(form.category)) {
-      nextErrors.category = "Please select a valid category.";
+    if (
+      form.category &&
+      form.category !== "__none__" &&
+      !/^[a-f\d]{24}$/i.test(form.category)
+    ) {
+      errors.category = "Please select a valid category.";
     }
 
     const tags = form.tags
@@ -480,12 +461,9 @@ export default function BlogForm({
 
     return true;
   }
-
   async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-
     if (isBusy || !validate()) return;
-
     const tags = [
       ...new Set(
         form.tags
@@ -522,7 +500,9 @@ export default function BlogForm({
       payload.featuredImageAlt = form.featuredImageAlt.trim();
     }
 
-    if (form.category) {
+    if (form.category === "__none__") {
+      payload.category = null;
+    } else if (form.category) {
       payload.category = form.category;
     }
 
@@ -557,30 +537,19 @@ export default function BlogForm({
     try {
       // Avoid unmount cleanup while the API saves the blog.
       skipUnmountCleanupRef.current = true;
-
       await onSubmit(payload);
-
       await cleanupAfterSuccessfulSave(form.featuredImage.trim());
     } catch (error: any) {
       skipUnmountCleanupRef.current = false;
-      const message = error instanceof Error
-          ? error.message
-          : getApiErrorMessageOnUi(
-              error,
-              isEditing ? "Unable to update blog." : "Unable to create blog."
-            );
-
+      const message = error instanceof Error ? error.message : getApiErrorMessageOnUi( error, isEditing ? "Unable to update blog." : "Unable to create blog." );
       toast.error(message);
     }
   }
-
   function handleCancel() {
     if (isBusy) return;
-
     void cleanupTemporaryUploads();
     onCancel();
   }
-
   function handleTextChange(
     field:
       | "seoTitle"
@@ -595,7 +564,6 @@ export default function BlogForm({
   ) {
     updateField(field, event.target.value);
   }
-
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Form header */}
@@ -604,11 +572,6 @@ export default function BlogForm({
           <h2 className="text-lg font-semibold text-[var(--foreground)]">
             {isEditing ? "Edit Blog" : "Create Blog"}
           </h2>
-          <p className="mt-1 text-sm text-slate-500">
-            {isEditing
-              ? "Update your article and publishing settings."
-              : "Write and publish a new article on CouponsNext."}
-          </p>
         </div>
 
         <button
@@ -623,7 +586,7 @@ export default function BlogForm({
       </div>
 
       {/* Basic information */}
-      <section className={sectionClass}>
+      <section>
         <div className="mb-5">
           <h3 className="text-sm font-semibold text-[var(--foreground)]">
             Basic information
@@ -633,7 +596,7 @@ export default function BlogForm({
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div>
             <label htmlFor="blog-title" className={labelClass}>
               Blog title <span className="text-red-500">*</span>
@@ -676,7 +639,10 @@ export default function BlogForm({
             </p>
           </div>
 
-          <div>
+         
+        </div>
+
+         <div className="mt-5 ">
             <label htmlFor="blog-excerpt" className={labelClass}>
               Excerpt <span className="text-red-500">*</span>
             </label>
@@ -701,11 +667,10 @@ export default function BlogForm({
               </span>
             </div>
           </div>
-        </div>
       </section>
 
       {/* Article content */}
-      <section className={sectionClass}>
+      <section >
         <div className="mb-5">
           <h3 className="text-sm font-semibold text-[var(--foreground)]">
             Article content <span className="text-red-500">*</span>
@@ -860,7 +825,7 @@ export default function BlogForm({
             >
               <option value="draft">Draft</option>
               <option value="published">Published</option>
-              <option value="scheduled">Scheduled</option>
+              {/* <option value="scheduled">Scheduled</option> */}
             </select>
           </div>
 

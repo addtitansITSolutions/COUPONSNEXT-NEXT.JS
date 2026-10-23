@@ -37,13 +37,15 @@ const optionalImageSchema = z.preprocess(
     typeof value === "string" && value.trim() === ""
       ? undefined
       : value,
-  z
-    .string({
-      error: "Image must be a text value",
-    })
-    .trim()
-    .max(500, "Image path is too long")
-    .optional()
+  z.union([
+    z
+      .string({
+        error: "Image must be a text value",
+      })
+      .trim()
+      .max(500, "Image path is too long"),
+    z.null(),
+  ]).optional()
 );
 
 const optionalObjectIdSchema = ( fieldName: string, allowNone = false ) =>
@@ -64,6 +66,28 @@ const optionalObjectIdSchema = ( fieldName: string, allowNone = false ) =>
       )
       .optional()
   );
+
+const optionalCategorySchema = z.preprocess(
+  (value) => {
+    if (
+      value === "" ||
+      value === null ||
+      value === "__none__"
+    ) {
+      return null;
+    }
+
+    return value;
+  },
+  z
+    .string()
+    .regex(
+      /^[a-f\d]{24}$/i,
+      "Please select a valid category"
+    )
+    .nullable()
+    .optional()
+);
 
 const httpUrlSchema = z
   .string({
@@ -164,7 +188,7 @@ const blogFieldsSchema = z.object({
       "Please select a valid author"
     ),
 
-  category: optionalObjectIdSchema("Category"),
+  category: optionalCategorySchema,
 
   tags: z
     .array(
@@ -219,12 +243,55 @@ const blogFieldsSchema = z.object({
   ogImage: optionalImageSchema,
 });
 
+// function validateBlogRules(
+//   blog: {
+//     status?: "draft" | "published" | "scheduled";
+//     scheduledAt?: Date;
+//     publishedAt?: Date;
+//     featuredImage?: string;
+//     featuredImageAlt?: string;
+//   },
+//   ctx: z.RefinementCtx
+// ) {
+//   if (blog.status === "scheduled" && !blog.scheduledAt) {
+//     ctx.addIssue({
+//       code: "custom",
+//       path: ["scheduledAt"],
+//       message: "Scheduled publication date is required",
+//     });
+//   }
+
+//   if (
+//     blog.status === "scheduled" &&
+//     blog.scheduledAt &&
+//     blog.publishedAt &&
+//     blog.scheduledAt.getTime() !== blog.publishedAt.getTime()
+//   ) {
+//     ctx.addIssue({
+//       code: "custom",
+//       path: ["publishedAt"],
+//       message:
+//         "A scheduled blog cannot have a different publication date",
+//     });
+//   }
+
+//   if (
+//     !blog.featuredImage &&
+//     blog.featuredImageAlt?.trim()
+//   ) {
+//     ctx.addIssue({
+//       code: "custom",
+//       path: ["featuredImageAlt"],
+//       message: "Add a featured image or clear its alt text",
+//     });
+//   }
+// }
 function validateBlogRules(
   blog: {
     status?: "draft" | "published" | "scheduled";
     scheduledAt?: Date;
     publishedAt?: Date;
-    featuredImage?: string;
+    featuredImage?: string | null;
     featuredImageAlt?: string;
   },
   ctx: z.RefinementCtx
@@ -251,10 +318,7 @@ function validateBlogRules(
     });
   }
 
-  if (
-    !blog.featuredImage &&
-    blog.featuredImageAlt?.trim()
-  ) {
+  if (!blog.featuredImage && blog.featuredImageAlt?.trim()) {
     ctx.addIssue({
       code: "custom",
       path: ["featuredImageAlt"],
