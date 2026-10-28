@@ -1,6 +1,13 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, type ReactNode, } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
 
 export type AuthUser = {
   id: string;
@@ -27,53 +34,56 @@ type AuthContextType = {
 };
 
 const AuthContext = createContext< AuthContextType | undefined >(undefined);
-
 export function AuthProvider({ children, }: { children: ReactNode; }) {
   const [user, setUser] = useState<AuthUser | null>(null);
-
   const [isLoading, setIsLoading] = useState(true);
+  const refreshUser = useCallback(async () => {
+  try {
+    const response = await fetch("/api/auth/me", {
+      method: "GET",
+      credentials: "include",
+      cache: "no-store",
+    });
 
-  const refreshUser = async () => {
-    try {
-      const response = await fetch(
-        "/api/auth/me",
-        {
-          method: "GET",
-          credentials: "include",
-          cache: "no-store",
-        }
-      );
-
-      if (!response.ok) {
-        setUser(null);
-        return;
-      }
-
-      const data = await response.json();
-
-      if (data.success && data.user) {
-        setUser(data.user);
-      } else {
-        setUser(null);
-      }
-    } catch {
+    if (!response.ok) {
       setUser(null);
+      return;
+    }
+
+    const data = await response.json();
+
+    if (data.success && data.user) {
+      setUser(data.user);
+    } else {
+      setUser(null);
+    }
+  } catch (error) {
+    console.error("Failed to refresh authentication:", error);
+    // Preserve the existing user if the request fails.
+  }
+}, []);
+
+  useEffect(() => {
+  let cancelled = false;
+
+  const initializeAuth = async () => {
+    try {
+      await refreshUser();
+    } finally {
+      if (!cancelled) {
+        setIsLoading(false);
+      }
     }
   };
 
-  useEffect(() => {
-    const initializeAuth = async () => {
-      setIsLoading(true);
+  void initializeAuth();
 
-      try {
-        await refreshUser();
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  return () => {
+    cancelled = true;
+  };
+}, [refreshUser]);
 
-    initializeAuth();
-  }, []);
+  
 
   const login = async ( email: string, password: string ) => {
     try {

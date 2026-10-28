@@ -4,11 +4,7 @@ import { ReactNode, useState } from "react";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
 
-export default function AdminShell({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export default function AdminShell({ children, }: { children: ReactNode; }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
