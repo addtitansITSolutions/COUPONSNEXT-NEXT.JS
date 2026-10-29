@@ -1,5 +1,6 @@
 import { connectDB } from "@/lib/mongodb";
 import Banner from "@/models/Banner";
+import Store from "@/models/Store";
 import BannerSliderClient, {
   type HomeBanner,
 } from "./BannerSliderClient";
@@ -16,9 +17,7 @@ export default async function HomeBannerSlider() {
     .lean();
 
   const banners: HomeBanner[] = documents.map((item) => {
-    const store = item.store as unknown as
-      | { name?: string }
-      | null;
+    const store = item.store as unknown as { name?: string } | null;
 
     return {
       id: String(item._id),
