@@ -44,7 +44,7 @@ export default function FeaturedCategoriesClient({
   return (
     <section
       aria-labelledby="featured-categories-heading"
-      className="relative overflow-hidden bg-white py-12 sm:py-16 lg:py-20"
+      className="relative overflow-hidden bg-white py-5 sm:py-6 lg:py-10"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Heading and navigation */}
@@ -88,7 +88,7 @@ export default function FeaturedCategoriesClient({
         {/* Category carousel */}
         <div
         ref={scrollRef}
-        className="flex snap-x snap-mandatory gap-6 overflow-x-auto scroll-smooth py-4 pb-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-8 lg:gap-10"
+        className="flex snap-x snap-mandatory gap-6 overflow-x-auto scroll-smooth py-4 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-8 lg:gap-10"
         >
         {categories.map((category) => (
             <motion.div
@@ -145,6 +145,17 @@ export default function FeaturedCategoriesClient({
             </Link>
             </motion.div>
         ))}
+        </div>
+
+        {/* View all categories */}
+        <div className="mt-1 flex justify-center sm:mt-4">
+          <Link
+            href="/categories"
+            className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] bg-white px-6 py-3 text-sm font-bold text-[var(--brand-purple)] shadow-sm transition-all duration-200 hover:border-[var(--brand-purple)] hover:bg-[var(--accent-light)] active:scale-95"
+          >
+            View all categories
+            <ArrowRight size={16} />
+          </Link>
         </div>
 
       </div>
