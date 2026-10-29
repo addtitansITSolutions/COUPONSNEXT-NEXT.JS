@@ -21,7 +21,7 @@ const defaultBanners: DealBanner[] = [
     id: "1",
     title: "Flipkart Big Bang Diwali - 50-90% Off",
     slug: "stores/flipkart",
-    image: "/flipkart_deals.png",
+    image: "/flipkart-deals.png",
   },
   {
     id: "2",
