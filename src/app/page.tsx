@@ -721,6 +721,8 @@ import type { Metadata } from "next";
 import PublicHeader from "@/components/public/layout/PublicHeader";
 import PublicFooter from "@/components/public/layout/PublicFooter";
 import HomeHero from "@/components/public/home/HomeHero";
+import FeaturedStores from "@/components/public/home/FeaturedStores";
+import DealBannersCarousel from "./components/public/home/DealBannersCarousel";
 
 export const metadata: Metadata = {
   title: "Coupons, Promo Codes & the Latest Deals",
@@ -743,6 +745,9 @@ export default function HomePage() {
       <PublicHeader />
       <main>
         <HomeHero />
+        <DealBannersCarousel />
+        <FeaturedStores />
+        
 
         {/* Database-backed homepage sections will be added here. */}
       </main>
