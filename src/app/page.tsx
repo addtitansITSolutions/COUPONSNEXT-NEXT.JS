@@ -725,6 +725,8 @@ import FeaturedStores from "@/components/public/home/FeaturedStores";
 import DealBannersCarousel from "./components/public/home/DealBannersCarousel";
 import FeaturedCategories from "@/components/public/home/FeaturedCategories";
 import FeaturedCoupons from "@/components/public/home/FeaturedCoupons";
+import HowCouponsNextWorks from "@/components/public/home/HowCouponsNextWorks";
+import HomeFinalBanner from "@/components/public/home/HomeFinalBanner";
 
 export const metadata: Metadata = {
   title: "Coupons, Promo Codes & the Latest Deals",
@@ -751,6 +753,8 @@ export default function HomePage() {
         <FeaturedCategories />
         <FeaturedStores />
         <FeaturedCoupons />
+        <HowCouponsNextWorks />
+        <HomeFinalBanner />
         
         
 
