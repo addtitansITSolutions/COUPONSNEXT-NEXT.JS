@@ -157,7 +157,7 @@ export default function FeaturedCouponsClient({
                     <button
                       type="button"
                       onClick={() => void handleCouponClick(coupon)}
-                      className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[var(--brand-purple)] px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-[var(--accent-hover)] active:scale-[0.98]"
+                      className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[var(--brand-purple)] px-2 py-3 text-xs font-bold text-white transition-colors hover:bg-[var(--accent-hover)] active:scale-[0.98]"
                     >
                       {coupon.type === "code" ? (
                         isCopied ? (
