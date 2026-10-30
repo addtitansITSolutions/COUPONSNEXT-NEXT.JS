@@ -94,7 +94,7 @@ export default function PopularPartnersMobileClient({
                   <Link
                     href={`/coupons/${coupon.slug}`}
                     title={coupon.title}
-                    className="group flex min-w-0 items-center gap-3 rounded-xl border border-[var(--border)] bg-white p-3 shadow-sm transition-colors hover:border-[var(--brand-purple)]/30"
+                    className="group flex min-w-0 items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--accent-light)] p-3 shadow-sm transition-colors hover:border-[var(--brand-purple)]/30"
                   >
                     <div className="relative flex h-[66px] w-[66px] shrink-0 items-center justify-center rounded-xl border border-[var(--border)] bg-white p-1.5">
                       <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-lg bg-[var(--accent-light)]">
