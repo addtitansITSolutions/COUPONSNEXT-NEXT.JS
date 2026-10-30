@@ -4,7 +4,7 @@ import PopularPartners from "./PopularPartners";
 export default function HomeHero() {
   return (
     <section
-      className="relative isolate overflow-hidden py-6 sm:py-8 md:py-10"
+      className="relative isolate overflow-hidden py-6 pb-8 sm:py-8 md:py-10"
       style={{ backgroundColor: "var(--brand-yellow)" }}
     >
       {/* Background Decorative Glow Blobs */}
