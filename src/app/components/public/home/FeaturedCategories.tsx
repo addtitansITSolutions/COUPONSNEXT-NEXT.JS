@@ -10,7 +10,7 @@ export default async function FeaturedCategories() {
     isFeatured: true,
   })
     .sort({ sortOrder: 1, createdAt: -1, _id: 1 })
-    .limit(8)
+    .limit(12)
     .select("name slug description image contentTypes sortOrder")
     .lean();
 

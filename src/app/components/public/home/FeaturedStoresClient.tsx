@@ -86,16 +86,16 @@ export default function FeaturedStoresClient({
             <motion.div variants={cardVariants} className="min-w-0">
               <h2
                 id="featured-stores-heading"
-                className="font-heading text-3xl font-black tracking-tight text-[var(--brand-purple)] sm:text-4xl lg:text-5xl"
+                className="relative font-heading text-sm font-black tracking-tight text-[var(--brand-purple)] sm:text-sm lg:text-xl"
               >
                 FEATURED{" "}
                 <span className="relative inline-block text-[var(--brand-yellow)]">
                   STORES
-                  <span
-                    aria-hidden="true"
-                    className="absolute -bottom-2 left-0 h-1.5 w-full rounded-full bg-[var(--brand-purple)]"
-                  />
                 </span>
+                <span
+                    aria-hidden="true"
+                    className="absolute -bottom-2 left-0 h-1 w-full rounded-full bg-[var(--brand-purple)]"
+                  />
               </h2>
             </motion.div>
 
@@ -137,7 +137,7 @@ export default function FeaturedStoresClient({
                 transition={{ duration: 0.2 }}
                 className="w-[72%] shrink-0 snap-start sm:w-[calc((100%-2.5rem)/3)] lg:w-[calc((100%-3.75rem)/4)]"
               >
-                <div className="group relative flex h-full min-h-[220px] flex-col overflow-hidden rounded-2xl border border-[var(--brand-yellow)] bg-[var(--brand-purple)]/75 p-4 shadow-sm transition-all duration-300 hover:shadow-xl hover:shadow-yellow-900/5 sm:min-h-[240px]">
+                <div className="group relative flex h-full min-h-[220px] flex-col overflow-hidden rounded-2xl border border-[var(--brand-yellow)] bg-[var(--brand-purple)]/85 p-4 shadow-sm transition-all duration-300 hover:shadow-xl hover:shadow-yellow-900/5 sm:min-h-[240px]">
                   {/* Yellow corner decoration */}
                   <div
                     aria-hidden="true"

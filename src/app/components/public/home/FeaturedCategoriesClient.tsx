@@ -51,16 +51,16 @@ export default function FeaturedCategoriesClient({
         <div className="mb-6 flex items-center justify-between gap-4 sm:mb-8">
           <h2
             id="featured-categories-heading"
-            className="font-heading text-3xl font-black tracking-tight text-[var(--brand-purple)] sm:text-4xl lg:text-5xl"
+            className="relative font-heading text-sm font-black tracking-tight text-[var(--brand-purple)] sm:text-sm lg:text-xl"
           >
             FEATURED{" "}
             <span className="relative inline-block text-[var(--brand-yellow)]">
               CATEGORIES
-              <span
-                aria-hidden="true"
-                className="absolute -bottom-2 left-0 h-1.5 w-full rounded-full bg-[var(--brand-purple)]"
-              />
             </span>
+            <span
+                aria-hidden="true"
+                className="absolute -bottom-2 left-0 h-1 w-full rounded-full bg-[var(--brand-purple)]"
+              />
           </h2>
 
           <div className="flex shrink-0 items-center gap-2">
@@ -95,7 +95,7 @@ export default function FeaturedCategoriesClient({
             key={category.id}
             whileHover={prefersReducedMotion ? {} : { y: -5 }}
             transition={{ duration: 0.2 }}
-            className="w-[120px] shrink-0 snap-start sm:w-[150px] lg:w-[170px]"
+            className="w-[60px] shrink-0 snap-start sm:w-[80px] lg:w-[100px]"
             >
             <Link
                 href={`/categories/${category.slug}`}
@@ -122,7 +122,7 @@ export default function FeaturedCategoriesClient({
                     <div className="flex h-full w-full items-center justify-center rounded-full bg-[var(--brand-purple)]/10">
                         <span
                         aria-hidden="true"
-                        className="text-4xl font-black text-[var(--brand-purple)] sm:text-5xl"
+                        className="text-xl font-black text-[var(--brand-purple)] sm:text-xl"
                         >
                         {category.name.charAt(0).toUpperCase()}
                         </span>
@@ -132,7 +132,7 @@ export default function FeaturedCategoriesClient({
                 </div>
 
                 {/* Category name */}
-                <h3 className="font-heading line-clamp-2 text-sm font-bold text-[var(--brand-navy)] transition-colors group-hover:text-[var(--brand-purple)] sm:text-base">
+                <h3 className="font-heading line-clamp-1 max-w-20 text-xs font-bold text-[var(--brand-navy)] transition-colors group-hover:text-[var(--brand-purple)] sm:text-xs">
                 {category.name}
                 </h3>
 
