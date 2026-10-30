@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 import {
   ArrowRight,
@@ -10,19 +9,19 @@ import {
 
 export default function HomeFinalBanner() {
   return (
-    <section className="bg-white px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-20">
-      <div className="relative mx-auto max-w-7xl overflow-hidden rounded-3xl bg-[var(--brand-navy)] px-6 py-12 shadow-xl sm:px-10 sm:py-16 lg:px-16 lg:py-20">
+    <section className="bg-[var(--brand-navy)] px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-20">
+      <div className="relative mx-auto max-w-7xl overflow-hidden rounded-3xl bg-[var(--brand-navy)] px-6 py-12  sm:px-10 sm:py-16 lg:px-16 lg:py-20">
 
         {/* Background Decorations */}
-        <div
+        {/* <div
           aria-hidden="true"
           className="pointer-events-none absolute -right-24 -top-32 h-80 w-80 rounded-full bg-[var(--brand-purple)]/35 blur-3xl sm:h-[450px] sm:w-[450px]"
-        />
+        /> */}
 
-        <div
+        {/* <div
           aria-hidden="true"
           className="pointer-events-none absolute -bottom-40 -left-20 h-80 w-80 rounded-full bg-[var(--brand-yellow)]/10 blur-3xl"
-        />
+        /> */}
 
         {/* Decorative Icons */}
         <div
