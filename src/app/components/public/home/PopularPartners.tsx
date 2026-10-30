@@ -59,3 +59,4 @@ export default async function PopularPartners() {
 
   return <PopularPartnersClient coupons={coupons} />;
 }
+
