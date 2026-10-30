@@ -187,9 +187,7 @@ interface BannerSliderClientProps {
   banners: HomeBanner[];
 }
 
-export default function BannerSliderClient({
-  banners,
-}: BannerSliderClientProps) {
+export default function BannerSliderClient({ banners, }: BannerSliderClientProps) {
   const [[page, direction], setPage] = useState([0, 0]);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -257,12 +255,12 @@ export default function BannerSliderClient({
   return (
     <section
       aria-label="Featured store promotions"
-      className="relative flex w-full min-w-0 flex-col gap-3 sm:gap-4"
+      className="relative h-full min-h-0 w-full min-w-0"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* CARD FRAME */}
-      <div className="relative isolate aspect-[4/3] w-full overflow-hidden rounded-2xl bg-[var(--brand-navy)] shadow-2xl shadow-black/40 sm:aspect-[16/7] sm:rounded-3xl lg:aspect-[21/9]">
+      <div className="relative isolate h-full min-h-[400px] w-full overflow-hidden rounded-2xl bg-[var(--brand-navy)] shadow-2xl shadow-black/40 sm:rounded-3xl">
         <AnimatePresence initial={false} custom={direction} mode="popLayout">
           <motion.div
             key={page}

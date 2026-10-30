@@ -1,4 +1,5 @@
 import HomeBannerSlider from "./HomeBannerSlider";
+import PopularPartners from "./PopularPartners";
 
 export default function HomeHero() {
   return (
@@ -18,9 +19,10 @@ export default function HomeHero() {
         style={{ backgroundColor: "var(--brand-yellow)", opacity: 0.08 }}
       />
 
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Full-width Banner Container */}
-        <div className="w-full min-w-0">
+      <div className="relative mx-auto flex max-w-7xl items-stretch gap-5 px-4 sm:px-6 lg:px-8">
+        <PopularPartners />
+
+        <div className="min-h-0 min-w-0 flex-1 self-stretch">
           <HomeBannerSlider />
         </div>
       </div>
