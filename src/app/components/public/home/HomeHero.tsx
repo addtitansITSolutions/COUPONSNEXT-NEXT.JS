@@ -20,11 +20,12 @@ export default function HomeHero() {
       />
 
       <div className="relative mx-auto flex max-w-7xl items-stretch gap-5 px-4 sm:px-6 lg:px-8">
-        <PopularPartners />
+        
 
         <div className="min-h-0 min-w-0 flex-1 self-stretch">
           <HomeBannerSlider />
         </div>
+        <PopularPartners />
       </div>
     </section>
   );
