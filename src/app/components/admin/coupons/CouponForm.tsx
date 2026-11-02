@@ -312,8 +312,8 @@ export default function CouponForm({ coupon, onSubmit, onCancel, submitting = fa
     if (form.image.length > 500) {
       nextErrors.image = "Image URL cannot exceed 500 characters.";
     }
-    const start = form.startsAt ? new Date(form.startsAt) : null;
-    const expiry = form.expiresAt ? new Date(form.expiresAt) : null;
+    const start = form.startsAt ? new Date(form.startsAt) : undefined;
+    const expiry = form.expiresAt ? new Date(form.expiresAt) : undefined;
     if (start && Number.isNaN(start.getTime())) {
       nextErrors.startsAt = "Enter a valid start date.";
     }
