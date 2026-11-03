@@ -186,7 +186,11 @@ export async function GET(request: NextRequest) {
         .skip(skip)
         .limit(limit)
         .populate("store", "name slug logo isActive")
-        .populate("category", "name slug")
+        .populate({
+          path: "category",
+          model: Category,
+          select: "name slug",
+        })
         .lean(),
 
       Coupon.countDocuments(filter),
