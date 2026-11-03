@@ -6,6 +6,7 @@ import { handleApiError } from "@/lib/errors/handleApiError";
 import { ApiError } from "@/lib/errors/ApiError";
 import Coupon, { type ICoupon } from "@/models/Coupon";
 import Store from "@/models/Store";
+import Category from "@/models/Category";                  //reference for population of category field in coupon model
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
