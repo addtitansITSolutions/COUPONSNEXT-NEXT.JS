@@ -62,7 +62,7 @@ export default function CouponFilters({ categories, countries, filters, onFilter
     filters.sort !== "popular";
 
   return (
-    <aside className="h-fit rounded-2xl border border-[var(--border)] bg-white p-5">
+    <div className="h-fit rounded-2xl border border-[var(--border)] bg-white p-5">
       {/* Header */}
       <div className="mb-5 flex items-center justify-between">
         <h3 className="flex items-center gap-2 font-bold text-[var(--brand-navy)]">
@@ -281,6 +281,6 @@ export default function CouponFilters({ categories, countries, filters, onFilter
           <option value="oldest">Oldest</option>
         </select>
       </div>
-    </aside>
+    </div>
   );
 }

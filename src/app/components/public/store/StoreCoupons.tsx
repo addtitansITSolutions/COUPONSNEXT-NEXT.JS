@@ -1,4 +1,5 @@
 "use client";
+
 import {
   useCallback,
   useEffect,
@@ -6,17 +7,22 @@ import {
   useRef,
   useState,
 } from "react";
-import { Loader2, TicketPercent } from "lucide-react";
+import { Filter, X } from "lucide-react";
 
-import CouponCard, {
-  type CouponItem,
-} from "@/components/public/coupons/CouponCard";
+import type { CouponItem } from "@/components/public/coupons/CouponCard";
 
 import CouponFilters, {
   type CouponFiltersState,
   type CouponFilterCategory,
   type CouponFilterCountry,
 } from "@/components/public/coupons/CouponFilters";
+
+import CouponLoading from "@/components/public/coupons/CouponLoading";
+import CouponEmptyState from "@/components/public/coupons/CouponEmptyState";
+import CouponErrorState from "@/components/public/coupons/CouponErrorState";
+import CouponGrid from "@/components/public/coupons/CouponGrid";
+import CouponResultsCount from "@/components/public/coupons/CouponResultsCount";
+import CouponLoadMore from "@/components/public/coupons/CouponLoadMore";
 
 interface StoreCouponsProps {
   storeId: string;
@@ -65,19 +71,23 @@ export default function StoreCoupons({
 
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+
   const [error, setError] = useState("");
+  const [loadMoreError, setLoadMoreError] = useState("");
 
   const [retryKey, setRetryKey] = useState(0);
 
   const observerRef = useRef<HTMLDivElement | null>(null);
   const loadingMoreRef = useRef(false);
   const loadMoreControllerRef = useRef<AbortController | null>(null);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   const filtersKey = useMemo(
     () => JSON.stringify(filters),
     [filters]
   );
 
+  // Build API query parameters.
   const buildQuery = useCallback(
     (page: number) => {
       const params = new URLSearchParams();
@@ -138,15 +148,17 @@ export default function StoreCoupons({
   // Fetch the first page whenever filters change.
   useEffect(() => {
     const controller = new AbortController();
-
     let isCurrentRequest = true;
 
+    // Cancel any ongoing pagination request.
     loadingMoreRef.current = false;
     loadMoreControllerRef.current?.abort();
+    loadMoreControllerRef.current = null;
 
     setLoading(true);
     setLoadingMore(false);
     setError("");
+    setLoadMoreError("");
     setCoupons([]);
     setPagination(null);
 
@@ -174,7 +186,7 @@ export default function StoreCoupons({
 
         if (!isCurrentRequest) return;
 
-        setCoupons(result?.coupons ?? []);
+        setCoupons(result.coupons ?? []);
         setPagination(result.pagination ?? null);
       } catch (err) {
         if (
@@ -216,6 +228,9 @@ export default function StoreCoupons({
       return;
     }
 
+    // Clear any previous pagination error.
+    setLoadMoreError("");
+
     loadingMoreRef.current = true;
 
     const controller = new AbortController();
@@ -248,6 +263,7 @@ export default function StoreCoupons({
 
       if (controller.signal.aborted) return;
 
+      // Prevent duplicate coupons.
       setCoupons((previous) => {
         const existingIds = new Set(
           previous.map((coupon) => coupon.id)
@@ -270,7 +286,7 @@ export default function StoreCoupons({
       }
 
       if (!controller.signal.aborted) {
-        setError(
+        setLoadMoreError(
           err instanceof Error
             ? err.message
             : "Failed to load more coupons."
@@ -294,6 +310,7 @@ export default function StoreCoupons({
       loading ||
       loadingMore ||
       error ||
+      loadMoreError ||
       !pagination?.hasNextPage
     ) {
       return;
@@ -320,11 +337,12 @@ export default function StoreCoupons({
     loading,
     loadingMore,
     error,
+    loadMoreError,
     pagination?.hasNextPage,
     coupons.length,
   ]);
 
-  // Cancel any pending pagination request when filters change.
+  // Cancel pending pagination requests when filters change.
   useEffect(() => {
     return () => {
       loadMoreControllerRef.current?.abort();
@@ -332,10 +350,35 @@ export default function StoreCoupons({
     };
   }, [filtersKey, retryKey, storeId]);
 
-  const handleRetry = () => {
+  // Retry the first-page request.
+  const handleRetry = useCallback(() => {
     setError("");
+    setLoadMoreError("");
     setRetryKey((previous) => previous + 1);
+  }, []);
+
+  useEffect(() => {
+  if (!showMobileFilters) return;
+
+  const handleEscape = (event: KeyboardEvent) => {
+    if (event.key === "Escape") {
+      setShowMobileFilters(false);
+    }
   };
+
+  document.addEventListener("keydown", handleEscape);
+
+  return () => {
+    document.removeEventListener("keydown", handleEscape);
+  };
+}, [showMobileFilters]);
+
+
+const hasActiveFilters = Object.keys(INITIAL_FILTERS).some(
+  (key) =>
+    filters[key as keyof CouponFiltersState] !==
+    INITIAL_FILTERS[key as keyof CouponFiltersState]
+);
 
   return (
     <section
@@ -343,176 +386,121 @@ export default function StoreCoupons({
       className="bg-white py-10 sm:py-14"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+
         {/* Section Heading */}
-        <div className="mb-7 sm:mb-9">
-          <p className="mb-2 text-xs font-extrabold uppercase tracking-[0.2em] text-[var(--brand-purple)] sm:text-sm">
-            Find your savings
-          </p>
+        <div className="mb-7 flex flex-col justify-between gap-4 sm:mb-9 lg:flex-row lg:items-end">
+          <div className="min-w-0">
+            {/* <p className="mb-2 text-xs font-extrabold uppercase tracking-[0.2em] text-[var(--brand-purple)] sm:text-sm">
+              Find your savings
+            </p> */}
 
-          <h2
-            id="store-coupons-heading"
-            className="text-2xl font-extrabold text-[var(--brand-navy)] sm:text-3xl"
-          >
-            Latest Coupons & Deals
-          </h2>
+            <h2
+              id="store-coupons-heading"
+              className="text-2xl font-extrabold tracking-tight text-[var(--brand-navy)] sm:text-3xl"
+            >
+              Latest Coupons & Deals
+            </h2>
 
-          <p className="mt-2 text-sm text-[var(--muted)] sm:text-base">
-            Explore the latest offers and discounts available
-            for this store.
-          </p>
+            <p className="mt-2 max-w-xl text-sm leading-relaxed text-[var(--muted)] sm:text-base">
+              Explore the latest offers and discounts available for this store.
+            </p>
+          </div>
+
+          <div className="shrink-0 hidden lg:flex lg:pb-1">
+            <span className="inline-flex items-center rounded-full border border-[var(--border)] bg-[var(--accent-light)] px-3.5 py-2 text-xs font-semibold text-[var(--brand-purple)]">
+              Updated offers
+            </span>
+          </div>
         </div>
 
         {/* Filters + Coupons */}
-        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[250px_minmax(0,1fr)] lg:gap-8">
-          {/* Filters */}
-          <CouponFilters
-            categories={categories}
-            countries={countries}
-            filters={filters}
-            onFilterChange={handleFilterChange}
-            onClear={handleClearFilters}
-          />
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[250px_minmax(0,1fr)] lg:gap-8">
+        {/* Filters column (stretches to full row height) */}
+          <aside className="hidden lg:block">
+            <div className="sticky top-[136px] max-h-[calc(100vh-36px-16px)] overflow-y-auto pr-1 [scrollbar-width:thin]">
+              <CouponFilters
+                categories={categories}
+                countries={countries}
+                filters={filters}
+                onFilterChange={handleFilterChange}
+                onClear={handleClearFilters}
+              />
+            </div>
+          </aside>
 
           {/* Coupon Results */}
           <div className="min-w-0">
-            {/* Results Count */}
-            {!loading && !error && (
-              <div className="mb-5 flex items-center justify-between gap-3">
-                <p className="text-sm text-[var(--muted)]">
-                  Showing{" "}
-                  <span className="font-bold text-[var(--brand-navy)]">
-                    {coupons.length}
-                  </span>
-                  {pagination && (
-                    <>
-                      {" "}of{" "}
-                      <span className="font-bold text-[var(--brand-navy)]">
-                        {pagination.total}
-                      </span>
-                    </>
-                  )}{" "}
-                  coupons
-                </p>
-              </div>
-            )}
 
-            {/* Initial Loading */}
-            {loading && (
-              <div
-                className="flex min-h-[300px] items-center justify-center"
-                role="status"
+            {/* Mobile Filters Button */}
+            <div className="mb-5 flex gap-3 lg:hidden">
+              <button
+                type="button"
+                onClick={() => setShowMobileFilters(true)}
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-white px-4 py-3 text-sm font-bold text-[var(--brand-navy)] shadow-sm transition hover:border-[var(--brand-purple)]"
               >
-                <div className="flex flex-col items-center gap-3">
-                  <Loader2
-                    size={32}
-                    className="animate-spin text-[var(--brand-purple)]"
-                  />
-                  <p className="text-sm text-[var(--muted)]">
-                    Loading coupons...
-                  </p>
-                </div>
-              </div>
-            )}
+                <Filter size={18} className="text-[var(--brand-purple)]" />
+                Filters
+              </button>
 
-            {/* Error State */}
-            {!loading && error && (
-              <div className="flex min-h-[300px] flex-col items-center justify-center rounded-2xl border border-[var(--border)] bg-white px-5 py-10 text-center">
-                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--accent-light)] text-[var(--brand-purple)]">
-                  <TicketPercent size={26} />
-                </div>
-
-                <h3 className="text-lg font-bold text-[var(--brand-navy)]">
-                  Unable to load coupons
-                </h3>
-
-                <p className="mt-2 max-w-sm text-sm text-[var(--muted)]">
-                  {error}
-                </p>
-
+              {hasActiveFilters && (
                 <button
                   type="button"
-                  onClick={handleRetry}
-                  className="mt-5 rounded-xl bg-[var(--brand-purple)] px-6 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[var(--accent-hover)]"
+                  onClick={handleClearFilters}
+                  className="flex items-center justify-center gap-2 rounded-xl border border-[var(--border)] px-4 py-3 text-sm font-bold text-[var(--brand-purple)] transition hover:bg-[var(--accent-light)]"
                 >
-                  Try Again
+                  Clear Filters
                 </button>
-              </div>
+              )}
+            </div>
+
+            {/* Results Count */}
+            {!loading && !error && (
+              <CouponResultsCount
+                count={coupons.length}
+                total={pagination?.total}
+              />
+            )}
+
+            {/* Loading State */}
+            {loading && <CouponLoading />}
+
+            {/* Initial Error State */}
+            {!loading && error && (
+              <CouponErrorState
+                message={error}
+                onRetry={handleRetry}
+              />
             )}
 
             {/* Empty State */}
             {!loading && !error && coupons.length === 0 && (
-              <div className="flex min-h-[300px] flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--border)] px-5 py-10 text-center">
-                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--accent-light)] text-[var(--brand-purple)]">
-                  <TicketPercent size={26} />
-                </div>
-
-                <h3 className="text-lg font-bold text-[var(--brand-navy)]">
-                  No coupons found
-                </h3>
-
-                <p className="mt-2 max-w-sm text-sm text-[var(--muted)]">
-                  We couldn't find any coupons matching your
-                  selected filters. Try changing or clearing
-                  your filters.
-                </p>
-
-                <button
-                  type="button"
-                  onClick={handleClearFilters}
-                  className="mt-5 rounded-xl border border-[var(--brand-purple)] px-6 py-2.5 text-sm font-bold text-[var(--brand-purple)] transition-colors hover:bg-[var(--accent-light)]"
-                >
-                  Clear Filters
-                </button>
-              </div>
+              <CouponEmptyState
+                onClear={handleClearFilters}
+              />
             )}
 
             {/* Coupon Grid */}
             {!loading && !error && coupons.length > 0 && (
               <>
-                <div className="grid grid-cols-2 gap-3 sm:gap-5 xl:grid-cols-3">
-                  {coupons.map((coupon) => (
-                    <CouponCard
-                      key={coupon.id}
-                      coupon={coupon}
-                    />
-                  ))}
-                </div>
+                <CouponGrid coupons={coupons} />
 
                 {/* Infinite Scroll Trigger */}
-                <div
-                  ref={observerRef}
-                  className="flex min-h-16 items-center justify-center py-5"
-                >
-                  {loadingMore && (
-                    <div
-                      className="flex items-center gap-2 text-sm text-[var(--muted)]"
-                      role="status"
-                    >
-                      <Loader2
-                        size={19}
-                        className="animate-spin text-[var(--brand-purple)]"
-                      />
-                      Loading more coupons...
-                    </div>
-                  )}
-
-                  {!pagination?.hasNextPage && (
-                    <p className="text-xs text-[var(--muted)]">
-                      You've reached the end of the coupons.
-                    </p>
-                  )}
-                </div>
+                <CouponLoadMore
+                  observerRef={observerRef}
+                  loadingMore={loadingMore}
+                  hasNextPage={pagination?.hasNextPage ?? false}
+                />
 
                 {/* Load More Error */}
-                {!loading && error && (
+                {loadMoreError && (
                   <div className="py-5 text-center">
                     <p className="text-sm text-[var(--muted)]">
-                      {error}
+                      {loadMoreError}
                     </p>
 
                     <button
                       type="button"
-                      onClick={handleRetry}
+                      onClick={loadMore}
                       className="mt-3 text-sm font-bold text-[var(--brand-purple)] hover:underline"
                     >
                       Try Again
@@ -524,6 +512,83 @@ export default function StoreCoupons({
           </div>
         </div>
       </div>
+
+
+
+      {/* Mobile Filter Drawer */}
+      {showMobileFilters && (
+        <div className="fixed inset-0 z-[1000] lg:hidden">
+          {/* Overlay */}
+          <button
+            type="button"
+            aria-label="Close filters"
+            onClick={() => setShowMobileFilters(false)}
+            className="absolute inset-0 bg-black/50 backdrop-blur-[2px]"
+          />
+
+          {/* Drawer */}
+          <aside
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="mobile-filter-title"
+            className="absolute inset-y-0 left-0 flex w-[88%] max-w-[380px] flex-col bg-white shadow-2xl animate-in slide-in-from-left duration-300"
+          >
+            {/* Header */}
+            <div className="flex shrink-0 items-center justify-between border-b border-[var(--border)] px-5 py-4">
+              <div>
+                <h2
+                  id="mobile-filter-title"
+                  className="text-lg font-extrabold text-[var(--brand-navy)]"
+                >
+                  Filters
+                </h2>
+                <p className="mt-0.5 text-xs text-[var(--muted)]">
+                  Find the offers that suit you
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowMobileFilters(false)}
+                aria-label="Close filters"
+                className="rounded-lg p-2 text-[var(--muted)] transition hover:bg-[var(--accent-light)] hover:text-[var(--brand-purple)]"
+              >
+                <X size={21} />
+              </button>
+            </div>
+
+            {/* Filter Content */}
+            <div className="min-h-0 flex-1 overflow-y-auto p-4">
+              <CouponFilters
+                categories={categories}
+                countries={countries}
+                filters={filters}
+                onFilterChange={handleFilterChange}
+                onClear={handleClearFilters}
+              />
+            </div>
+
+            {/* Footer */}
+            <div className="flex shrink-0 gap-3 border-t border-[var(--border)] bg-white p-4">
+              <button
+                type="button"
+                onClick={handleClearFilters}
+                className="flex-1 rounded-xl border border-[var(--border)] px-4 py-3 text-sm font-bold text-[var(--brand-navy)] transition hover:bg-gray-50"
+              >
+                Clear All
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowMobileFilters(false)}
+                className="flex-1 rounded-xl bg-[var(--brand-purple)] px-4 py-3 text-sm font-bold text-white transition hover:bg-[var(--accent-hover)]"
+              >
+                Done
+              </button>
+            </div>
+          </aside>
+        </div>
+      )}
     </section>
   );
 }
