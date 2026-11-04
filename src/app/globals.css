@@ -307,3 +307,220 @@ button {
     margin-left: 0;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* hero bg */
+
+/* ----- icon motions ----- */
+.cf-anim { animation-iteration-count: infinite; will-change: transform; }
+
+@keyframes cf-float {
+  0%, 100% { transform: translateY(0) rotate(var(--r)); }
+  50%      { transform: translateY(-24px) rotate(calc(var(--r) + 10deg)); }
+}
+@keyframes cf-sway {
+  0%, 100% { transform: translateX(-16px) rotate(calc(var(--r) - 10deg)); }
+  50%      { transform: translateX(16px)  rotate(calc(var(--r) + 10deg)); }
+}
+@keyframes cf-bob {
+  0%, 100% { transform: translateY(0) scale(1) rotate(var(--r)); }
+  33%      { transform: translateY(14px) scale(1.08) rotate(calc(var(--r) - 6deg)); }
+  66%      { transform: translateY(-10px) scale(0.95) rotate(calc(var(--r) + 6deg)); }
+}
+@keyframes cf-pulse {
+  0%, 100% { transform: scale(0.85) rotate(var(--r)); }
+  50%      { transform: scale(1.25) rotate(calc(var(--r) + 12deg)); }
+}
+@keyframes cf-spin {
+  from { transform: rotate(var(--r)); }
+  to   { transform: rotate(calc(var(--r) + 360deg)); }
+}
+
+/* ----- sparkles ----- */
+@keyframes cf-twinkle {
+  0%, 100% { opacity: 0.1; transform: scale(0.6); }
+  50%      { opacity: 0.75; transform: scale(1.4); }
+}
+.cf-twinkle { animation: cf-twinkle 4s ease-in-out infinite; }
+
+/* ----- drifting tickets ----- */
+@keyframes cf-travel {
+  from { transform: translateX(-25vw); }
+  to   { transform: translateX(110vw); }
+}
+.cf-ticket-travel {
+  animation: cf-travel 60s linear infinite;
+  will-change: transform;
+}
+.cf-ticket {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1.1rem;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  color: var(--brand-purple);
+  background: rgba(255, 255, 255, 0.28);
+  border: 1.5px dashed color-mix(in srgb, var(--brand-purple) 45%, transparent);
+  border-radius: 10px;
+  opacity: 0.55;
+  /* notched left/right edges */
+  -webkit-mask:
+    radial-gradient(circle 7px at 0 50%, #0000 97%, #000) left / 51% 100% no-repeat,
+    radial-gradient(circle 7px at 100% 50%, #0000 97%, #000) right / 51% 100% no-repeat;
+  mask:
+    radial-gradient(circle 7px at 0 50%, #0000 97%, #000) left / 51% 100% no-repeat,
+    radial-gradient(circle 7px at 100% 50%, #0000 97%, #000) right / 51% 100% no-repeat;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cf-anim, .cf-twinkle, .cf-ticket-travel { animation: none !important; }
+}
+
+
+
+
+
+/* ============ Featured stores 3D background ============ */
+.fs-root { --mx: 0; --my: 0; --px: 50%; --py: 50%; }
+
+.fs-spotlight {
+  background:
+    radial-gradient(420px circle at var(--px) var(--py), rgba(255,255,255,0.75), transparent 65%),
+    radial-gradient(700px circle at var(--px) var(--py),
+      color-mix(in srgb, var(--brand-purple) 9%, transparent), transparent 70%);
+}
+
+/* perspective scene */
+.fs-scene { perspective: 1100px; perspective-origin: 50% 40%; }
+.fs-stage {
+  transform-style: preserve-3d;
+  transform: rotateX(calc(var(--my) * -9deg)) rotateY(calc(var(--mx) * 13deg));
+  will-change: transform;
+}
+.fs-item { position: absolute; transform-style: preserve-3d; }
+.fs-float {
+  transform-style: preserve-3d;
+  animation: fs-float 9s ease-in-out infinite;
+}
+@keyframes fs-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-24px); }
+}
+
+/* cube */
+.fs-cube {
+  position: relative;
+  transform-style: preserve-3d;
+  animation: fs-spin3d 20s linear infinite;
+}
+@keyframes fs-spin3d {
+  from { transform: rotateX(var(--rx)) rotateY(0deg); }
+  to   { transform: rotateX(calc(var(--rx) + 360deg)) rotateY(360deg); }
+}
+.fs-face {
+  position: absolute; inset: 0;
+  display: grid; place-items: center;
+  color: var(--c);
+  border: 1.5px solid color-mix(in srgb, var(--c) 55%, transparent);
+  background: color-mix(in srgb, var(--c) 16%, rgba(255,255,255,0.35));
+  border-radius: 12px;
+  backface-visibility: visible;
+}
+.fs-f1 { transform: rotateY(0deg)   translateZ(calc(var(--s) / 2)); }
+.fs-f2 { transform: rotateY(90deg)  translateZ(calc(var(--s) / 2)); }
+.fs-f3 { transform: rotateY(180deg) translateZ(calc(var(--s) / 2)); }
+.fs-f4 { transform: rotateY(-90deg) translateZ(calc(var(--s) / 2)); }
+.fs-f5 { transform: rotateX(90deg)  translateZ(calc(var(--s) / 2)); }
+.fs-f6 { transform: rotateX(-90deg) translateZ(calc(var(--s) / 2)); }
+
+/* flipping coupon card */
+.fs-card {
+  position: relative;
+  width: 124px; height: 66px;
+  transform-style: preserve-3d;
+  animation: fs-flip 12s ease-in-out infinite;
+}
+@keyframes fs-flip {
+  from { transform: rotateX(var(--tilt)) rotateY(0deg); }
+  to   { transform: rotateX(var(--tilt)) rotateY(360deg); }
+}
+.fs-card-face {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  font-size: 0.7rem; font-weight: 800; letter-spacing: 0.06em; white-space: nowrap;
+  color: var(--c);
+  background: color-mix(in srgb, var(--c) 18%, rgba(255,255,255,0.6));
+  border: 1.5px dashed color-mix(in srgb, var(--c) 60%, transparent);
+  border-radius: 10px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.fs-card-back { transform: rotateY(180deg); }
+
+/* orbs */
+.fs-orb {
+  border-radius: 9999px;
+  opacity: 0.4;
+  background: radial-gradient(circle at 30% 28%, #fff 0%,
+    color-mix(in srgb, var(--c) 55%, white) 32%, var(--c) 100%);
+  box-shadow:
+    inset -6px -8px 16px rgba(0,0,0,0.14),
+    0 16px 30px color-mix(in srgb, var(--c) 28%, transparent);
+}
+
+/* rings */
+.fs-ring {
+  border-radius: 9999px;
+  border: 3px solid color-mix(in srgb, var(--c) 45%, transparent);
+  opacity: 0.55;
+  animation: fs-ring 20s linear infinite;
+}
+@keyframes fs-ring {
+  from { transform: rotateX(var(--tilt)) rotateZ(0deg); }
+  to   { transform: rotateX(var(--tilt)) rotateZ(360deg); }
+}
+
+/* grid floor */
+.fs-floor-wrap {
+  perspective: 500px;
+  perspective-origin: 50% 0%;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 45%);
+  mask-image: linear-gradient(to bottom, transparent, #000 45%);
+}
+.fs-floor {
+  position: absolute; left: -50%; right: -50%; top: 0; bottom: -40%;
+  transform-origin: 50% 0%;
+  transform: rotateX(68deg);
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--brand-purple) 22%, transparent) 1.5px, transparent 1.5px),
+    linear-gradient(90deg, color-mix(in srgb, var(--brand-purple) 22%, transparent) 1.5px, transparent 1.5px);
+  background-size: 56px 56px;
+  animation: fs-grid 3s linear infinite;
+}
+@keyframes fs-grid { to { background-position: 0 56px; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .fs-float, .fs-cube, .fs-card, .fs-ring, .fs-floor { animation: none !important; }
+}
