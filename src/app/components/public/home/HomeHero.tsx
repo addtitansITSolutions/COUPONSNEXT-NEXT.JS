@@ -1,6 +1,6 @@
 import HomeBannerSlider from "./HomeBannerSlider";
 import PopularPartners from "./PopularPartners";
-import FeaturedStoresBackground from "./FeaturedStoresBackground";
+import HeroCouponBackground from "./HeroCouponBackground";
 
 export default function HomeHero() {
   return (
@@ -20,8 +20,7 @@ export default function HomeHero() {
         style={{ backgroundColor: "var(--brand-yellow)", opacity: 0.08 }}
       />
 
-      {/* <HeroCouponBackground /> */}
-      <FeaturedStoresBackground />
+      <HeroCouponBackground />
 
       <div className="relative mx-auto flex max-w-7xl items-stretch gap-5 px-4 sm:px-6 lg:px-8">
         

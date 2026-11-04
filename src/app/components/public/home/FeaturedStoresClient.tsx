@@ -11,7 +11,7 @@ import {
   Tag,
 } from "lucide-react";
 import { motion, useReducedMotion, type Variants } from "framer-motion";
-import HeroCouponBackground from "./HeroCouponBackground";
+import FeaturedStoresBackground from "./FeaturedStoresBackground";
 
 export interface FeaturedStoreItem {
   id: string;
@@ -75,7 +75,7 @@ export default function FeaturedStoresClient({
       aria-labelledby="featured-stores-heading"
       className="relative isolate overflow-hidden bg-[var(--accent-light)] py-12 sm:py-16 lg:py-20"
     >
-      <HeroCouponBackground />
+      <FeaturedStoresBackground />
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
           variants={sectionVariants}
