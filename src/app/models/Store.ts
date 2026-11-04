@@ -123,6 +123,12 @@ StoreSchema.index({
   sortOrder: 1,
 });
 
+StoreSchema.index({
+  isActive: 1,
+  name: 1,
+  sortOrder: 1,
+});
+
 // Search/sorting by name
 StoreSchema.index({
   name: 1,
