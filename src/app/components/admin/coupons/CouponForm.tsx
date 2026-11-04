@@ -374,12 +374,19 @@ export default function CouponForm({ coupon, onSubmit, onCancel, submitting = fa
     if (form.discount.trim()) {
       payload.discount = form.discount.trim();
     }
-    if (form.startsAt) {
-      payload.startsAt = new Date(form.startsAt).toISOString();
-    }
-    if (form.expiresAt) {
-      payload.expiresAt = new Date(form.expiresAt).toISOString();
-    }
+    // if (form.startsAt) {
+    //   payload.startsAt = new Date(form.startsAt).toISOString();
+    // }
+    // if (form.expiresAt) {
+    //   payload.expiresAt = new Date(form.expiresAt).toISOString();
+    // }
+    payload.startsAt = form.startsAt
+    ? new Date(form.startsAt).toISOString()
+    : null;
+
+  payload.expiresAt = form.expiresAt
+    ? new Date(form.expiresAt).toISOString()
+    : null;
     try {
       // Prevent unmount cleanup from deleting uploads while saving.
       skipUnmountCleanupRef.current = true;

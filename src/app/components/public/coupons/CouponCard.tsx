@@ -63,9 +63,47 @@ export default function CouponCard({ coupon }: CouponCardProps) {
 };
 
   // Sale countdown
+  // useEffect(() => {
+  //   if (!coupon.startsAt || !coupon.expiresAt) {
+  //     setRemainingTime(null);
+  //     return;
+  //   }
+
+  //   const startTime = new Date(coupon.startsAt).getTime();
+  //   const endTime = new Date(coupon.expiresAt).getTime();
+
+  //   if (
+  //     !Number.isFinite(startTime) ||
+  //     !Number.isFinite(endTime) ||
+  //     startTime >= endTime
+  //   ) {
+  //     setRemainingTime(null);
+  //     return;
+  //   }
+
+  //   const updateTimer = () => {
+  //     const now = Date.now();
+
+  //     if (now < startTime) {
+  //       setRemainingTime(null);
+  //       return;
+  //     }
+
+  //     setRemainingTime(Math.max(0, endTime - now));
+  //   };
+
+  //   updateTimer();
+
+  //   const interval = setInterval(updateTimer, 1000);
+
+  //   return () => clearInterval(interval);
+  // }, [coupon.startsAt, coupon.expiresAt]);
+
+  // Sale countdown
   useEffect(() => {
+    setRemainingTime(null);
+
     if (!coupon.startsAt || !coupon.expiresAt) {
-      setRemainingTime(null);
       return;
     }
 
@@ -77,19 +115,25 @@ export default function CouponCard({ coupon }: CouponCardProps) {
       !Number.isFinite(endTime) ||
       startTime >= endTime
     ) {
-      setRemainingTime(null);
       return;
     }
 
     const updateTimer = () => {
       const now = Date.now();
 
+      // Sale has not started yet.
       if (now < startTime) {
         setRemainingTime(null);
         return;
       }
 
-      setRemainingTime(Math.max(0, endTime - now));
+      // Sale has ended.
+      if (now >= endTime) {
+        setRemainingTime(0);
+        return;
+      }
+
+      setRemainingTime(endTime - now);
     };
 
     updateTimer();

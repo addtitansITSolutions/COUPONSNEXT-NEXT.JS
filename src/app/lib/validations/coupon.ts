@@ -44,14 +44,24 @@ const httpUrlSchema = z
     "Affiliate URL must use HTTP or HTTPS"
   );
 
+// const optionalDateSchema = z.preprocess(
+//   (value) =>
+//     value === "" || value === null || value === undefined
+//       ? undefined
+//       : value,
+//   z.coerce.date({
+//     error: "Please enter a valid date",
+//   }).optional()
+// );
+
 const optionalDateSchema = z.preprocess(
-  (value) =>
-    value === "" || value === null || value === undefined
-      ? undefined
-      : value,
-  z.coerce.date({
-    error: "Please enter a valid date",
-  }).optional()
+  (value) => (value === "" ? undefined : value),
+  z.union([
+    z.null(),
+    z.coerce.date({
+      error: "Please enter a valid date",
+    }),
+  ]).optional()
 );
 
 const couponFieldsSchema = z.object({
@@ -167,8 +177,8 @@ function validateCouponRules(
   coupon: {
     type?: "code" | "deal";
     code?: string;
-    startsAt?: Date;
-    expiresAt?: Date;
+    startsAt?: Date | null;
+    expiresAt?: Date | null;
   },
   ctx: z.RefinementCtx
 ) {
