@@ -45,7 +45,7 @@ export default function StoreCategoryFilter({
             <option value="">All Categories</option>
 
             {categories.map((category) => (
-              <option key={category.id} value={category.id}>
+              <option key={category.id} value={category.slug}>
                 {category.name}
               </option>
             ))}

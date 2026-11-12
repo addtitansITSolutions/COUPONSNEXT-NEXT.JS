@@ -47,7 +47,7 @@ export default function StoreGrid({
         <div className="absolute inset-0 z-10 rounded-2xl bg-white/40" />
       )}
 
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {stores.map((store) => (
           <StoreCard key={store.id} store={store} />
         ))}

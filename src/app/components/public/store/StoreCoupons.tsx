@@ -93,7 +93,7 @@ export default function StoreCoupons({
       const params = new URLSearchParams();
 
       params.set("page", String(page));
-      params.set("limit", "1");
+      params.set("limit", "16");
       params.set("store", storeId);
       params.set("sort", filters.sort);
 

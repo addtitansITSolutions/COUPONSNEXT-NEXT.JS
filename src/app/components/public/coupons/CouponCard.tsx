@@ -208,7 +208,7 @@ export default function CouponCard({ coupon }: CouponCardProps) {
         <div className="absolute left-0 top-0 flex items-stretch">
           {/* Text block */}
           <span className="bg-[var(--brand-purple)] px-2 pl-4 py-1.5 text-[8px] font-extrabold uppercase tracking-wide text-white">
-            {coupon.type === "code" ? "Coupon Code" : "Deal"}
+            {coupon.type === "code" ? "Coupon" : "Deal"}
           </span>
 
           {/* Right S-curve */}
@@ -351,9 +351,9 @@ export default function CouponCard({ coupon }: CouponCardProps) {
         <div className="mb-2 flex flex-wrap items-center gap-2">
           <Link
             href={`/stores/${coupon.store.slug}`}
-            className="inline-flex w-fit items-center gap-1.5 text-xs font-bold text-[var(--muted)] transition-colors hover:text-[var(--brand-purple)]"
+            className="line-clamp-1 inline-flex w-fit items-center gap-1.5 text-xs font-bold text-[var(--muted)] transition-colors hover:text-[var(--brand-purple)]"
           >
-            {coupon.store.name}
+            <span className="truncate">{coupon.store.name}</span>
             <ExternalLink size={12} />
           </Link>
 

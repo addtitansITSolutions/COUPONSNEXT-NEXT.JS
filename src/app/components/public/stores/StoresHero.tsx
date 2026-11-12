@@ -5,6 +5,31 @@ import {
   Shirt, Plane, UtensilsCrossed, Laptop, Sparkles, Home, Gamepad2, Dumbbell,
   type LucideIcon,
 } from "lucide-react";
+import { Dancing_Script } from "next/font/google";
+
+// module scope, same file as your hero section
+const script = Dancing_Script({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+});
+
+function Cursive({ text }: { text: string }) {
+  return (
+    <>
+      {text.split(" ").map((word, i) => (
+        <span key={i} className="inline-block whitespace-pre">
+          <span className="text-[1.45em] leading-none">{word[0]}</span>
+          {word.slice(1)}{" "}
+        </span>
+      ))}
+    </>
+  );
+}
+
+
+
+
+
 
 /* ---------- ticker words ---------- */
 const WORDS = [
@@ -32,7 +57,7 @@ const CHIPS: Chip[] = [
 const STYLES = `
 .sx-root {
   --mx: 0; --my: 0; --px: 50%; --py: 38%;
-  --sx-fade: #ffffff; /* colour of the section below, change if it isn't pure white */
+  --sx-fade: #f8f6f6; /* colour of the section below, change if it isn't pure white */
 }
 
 /* soft purple glow */
@@ -127,9 +152,7 @@ const STYLES = `
 }
 `;
 
-function Band({
-  top, reverse, yellow, hideOnMobile,
-}: { top: string; reverse?: boolean; yellow?: boolean; hideOnMobile?: boolean }) {
+function Band({ top, reverse, yellow, hideOnMobile, }: { top: string; reverse?: boolean; yellow?: boolean; hideOnMobile?: boolean }) {
   return (
     <div
       className={`sx-band ${yellow ? "sx-band-yellow" : ""} ${hideOnMobile ? "hidden sm:block" : ""}`}
@@ -259,12 +282,24 @@ export default function StoresHero() {
       {/* ============ Content ============ */}
       <div className="relative mx-auto flex max-w-7xl flex-col items-center px-4 pb-2 pt-16 text-center sm:px-6 sm:pb-2 sm:pt-20 lg:px-8 lg:pb-2 lg:pt-24">
 
-        <h1 className="max-w-3xl text-3xl font-extrabold leading-tight tracking-tight text-[var(--brand-navy)] sm:text-4xl lg:text-5xl">
-          <span className="sx-rise block" style={{ animationDelay: "0.15s" }}>
+        {/* <h1 className="max-w-3xl text-3xl font-semibold leading-tight tracking-tight text-[var(--brand-navy)] sm:text-4xl lg:text-5xl">
+          <span className="sx-rise block text-xl md:text-2xl" style={{ animationDelay: "0.15s" }}>
             Find Your Favorite Stores.
           </span>
           <span className="sx-rise mt-2 block" style={{ animationDelay: "0.3s" }}>
             <span className="sx-shine">Discover Better Deals.</span>
+          </span>
+        </h1> */}
+        <h1
+          className={`max-w-3xl text-3xl font-semibold leading-tight tracking-tight text-[var(--brand-navy)] sm:text-4xl lg:text-5xl`}
+        >
+          <span className={`sx-rise block text-2xl md:text-3xl ${script.className}`} style={{ animationDelay: "0.15s" }}>
+            <Cursive text="Find Your Favorite Stores." />
+          </span>
+          <span className="sx-rise mt-2 block" style={{ animationDelay: "0.3s" }}>
+            <span className="sx-shine">
+              <Cursive text="Discover Better Deals." />
+            </span>
           </span>
         </h1>
 
