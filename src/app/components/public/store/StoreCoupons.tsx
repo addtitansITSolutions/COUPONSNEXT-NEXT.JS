@@ -8,6 +8,11 @@ import {
   useState,
 } from "react";
 import { Filter, X } from "lucide-react";
+import {
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 
 import type { CouponItem } from "@/components/public/coupons/CouponCard";
 
@@ -26,6 +31,7 @@ import CouponLoadMore from "@/components/public/coupons/CouponLoadMore";
 
 interface StoreCouponsProps {
   storeId: string;
+  storeSlug: string;
   categories: CouponFilterCategory[];
   countries: CouponFilterCountry[];
 }
@@ -57,13 +63,36 @@ const INITIAL_FILTERS: CouponFiltersState = {
   sort: "popular",
 };
 
+
+
+
+function getFiltersFromUrl( params: URLSearchParams ): CouponFiltersState {
+  const sort = params.get("sort");
+  return {
+    search: params.get("search") ?? "",
+    category: params.get("category") ?? "",
+    type: params.get("type") ?? "",
+    isVerified: params.get("isVerified") ?? "",
+    isFeatured: params.get("isFeatured") ?? "",
+    country: params.get("country") ?? "",
+    sort: sort === "latest" || sort === "oldest" ? sort : "popular",
+  };
+}
+
 export default function StoreCoupons({
   storeId,
+  storeSlug,
   categories,
   countries,
 }: StoreCouponsProps) {
-  const [filters, setFilters] =
-    useState<CouponFiltersState>(INITIAL_FILTERS);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const queryString = searchParams.toString();
+
+  const [filters, setFilters] = useState<CouponFiltersState>(
+    () => getFiltersFromUrl(new URLSearchParams(queryString))
+  );
 
   const [coupons, setCoupons] = useState<CouponItem[]>([]);
   const [pagination, setPagination] =
@@ -94,7 +123,7 @@ export default function StoreCoupons({
 
       params.set("page", String(page));
       params.set("limit", "16");
-      params.set("store", storeId);
+      params.set("store", storeSlug);
       params.set("sort", filters.sort);
 
       if (filters.search.trim()) {
@@ -123,8 +152,14 @@ export default function StoreCoupons({
 
       return params.toString();
     },
-    [storeId, filters]
+    [storeSlug, filters]
   );
+
+  useEffect(() => {
+    setFilters(
+      getFiltersFromUrl(new URLSearchParams(queryString))
+    );
+  }, [queryString]);
 
   // Update individual filters.
   const handleFilterChange = useCallback(
@@ -132,18 +167,33 @@ export default function StoreCoupons({
       key: K,
       value: CouponFiltersState[K]
     ) => {
-      setFilters((previous) => ({
-        ...previous,
-        [key]: value,
-      }));
+      const params = new URLSearchParams(queryString);
+
+      const stringValue = String(value);
+
+      if (
+        stringValue &&
+        !(key === "sort" && stringValue === "popular")
+      ) {
+        params.set(key, stringValue);
+      } else {
+        params.delete(key);
+      }
+
+      const query = params.toString();
+
+      router.push(
+        query ? `${pathname}?${query}` : pathname,
+        { scroll: false }
+      );
     },
-    []
+    [queryString, pathname, router]
   );
 
   // Reset all filters.
   const handleClearFilters = useCallback(() => {
-    setFilters(INITIAL_FILTERS);
-  }, []);
+    router.push(pathname, { scroll: false });
+  }, [pathname, router]);
 
   // Fetch the first page whenever filters change.
   useEffect(() => {
@@ -417,7 +467,7 @@ const hasActiveFilters = Object.keys(INITIAL_FILTERS).some(
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[250px_minmax(0,1fr)] lg:gap-8">
         {/* Filters column (stretches to full row height) */}
           <aside className="hidden lg:block">
-            <div className="sticky top-[136px] max-h-[calc(100vh-36px-16px)] overflow-y-auto pr-1 [scrollbar-width:thin]">
+            <div className="sticky top-[136px] max-h-[calc(100vh-36px-16px)] overflow-y-auto pr-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               <CouponFilters
                 categories={categories}
                 countries={countries}
@@ -482,7 +532,7 @@ const hasActiveFilters = Object.keys(INITIAL_FILTERS).some(
             {/* Coupon Grid */}
             {!loading && !error && coupons.length > 0 && (
               <>
-                <CouponGrid coupons={coupons} />
+                <CouponGrid coupons={coupons} showDesktopFilters={true}/>
 
                 {/* Infinite Scroll Trigger */}
                 <CouponLoadMore

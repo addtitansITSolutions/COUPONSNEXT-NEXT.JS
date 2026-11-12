@@ -230,27 +230,21 @@
 
 
 
-
+//accepts category slug instead of category id
 
 import { NextRequest, NextResponse } from "next/server";
 import { Types } from "mongoose";
 import { z } from "zod";
-
 import { connectDB } from "@/lib/mongodb";
 import { handleApiError } from "@/lib/errors/handleApiError";
 import Store from "@/models/Store";
 import Category from "@/models/Category";
-
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
 const publicStoreQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
-
   limit: z.coerce.number().int().min(1).max(48).default(24),
-
   search: z.string().trim().max(100).optional(),
-
   letter: z
     .string()
     .trim()
@@ -298,12 +292,7 @@ export async function GET(request: NextRequest) {
     await connectDB();
 
     // Resolve category slug to its MongoDB ID.
-    const activeCategory = category
-      ? await Category.findOne({
-          slug: category,
-          isActive: true,
-          contentTypes: "store",
-        })
+    const activeCategory = category ? await Category.findOne({ slug: category, isActive: true, contentTypes: "store",})
           .select("_id")
           .lean()
       : null;
@@ -384,7 +373,7 @@ export async function GET(request: NextRequest) {
 
       Store.countDocuments(filter),
 
-      Category.find({
+      Category.find({                            //sending all active stores categories to show in filters 
         isActive: true,
         contentTypes: "store",
       })

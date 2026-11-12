@@ -84,6 +84,7 @@ export default async function StorePage({ params }: StorePageProps) {
 
         <StoreCoupons
           storeId={store._id.toString()}
+          storeSlug={store.slug}
           categories={categories}
           countries={countryOptions}
         />
