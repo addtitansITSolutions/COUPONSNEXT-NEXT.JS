@@ -57,7 +57,7 @@ const CHIPS: Chip[] = [
 const STYLES = `
 .sx-root {
   --mx: 0; --my: 0; --px: 50%; --py: 38%;
-  --sx-fade: #f8f6f6; /* colour of the section below, change if it isn't pure white */
+  --sx-fade: #ffffff; /* colour of the section below, change if it isn't pure white */
 }
 
 /* soft purple glow */
@@ -109,7 +109,7 @@ const STYLES = `
   display: inline-flex; align-items: center; gap: .5rem;
   padding: .55rem .95rem; border-radius: 9999px;
   font-size: .8rem; font-weight: 700; letter-spacing: .02em;
-  color: rgba(255,255,255,.7);
+  color: rgba(112, 45, 145, 0.5);
   background: rgba(255,255,255,.05);
   border: 1px solid rgba(255,255,255,.14);
   backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);

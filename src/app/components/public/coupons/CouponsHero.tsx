@@ -141,7 +141,7 @@ const STYLES = `
   --my: 0;
   --px: 50%;
   --py: 38%;
-  --cn-fade: #eee9e9;
+  --cn-fade: #ffffff;
 }
 
 /* Background glow */
@@ -281,7 +281,7 @@ const STYLES = `
   font-size: .8rem;
   font-weight: 700;
   letter-spacing: .02em;
-  color: rgba(255,255,255,.7);
+  color: rgba(112, 45, 145, 0.5);
   background: rgba(255,255,255,.05);
   border: 1px solid rgba(255,255,255,.14);
   backdrop-filter: blur(6px);
