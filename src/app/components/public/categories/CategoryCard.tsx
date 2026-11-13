@@ -21,7 +21,8 @@ interface CategoryCardProps {
 export default function CategoryCard({ category }: CategoryCardProps) {
   return (
     <Link
-      href={`/coupons?category=${encodeURIComponent(category.slug)}`}
+      // href={`/coupons?category=${encodeURIComponent(category.slug)}`}
+      href={`/categories/${encodeURIComponent(category.slug)}`}
       className="group relative flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-white p-4 transition duration-300 hover:-translate-y-1 hover:border-[var(--brand-purple)]/40 hover:shadow-lg hover:shadow-[var(--brand-purple)]/5 sm:p-5"
     >
       <div className="relative mb-4 flex aspect-[16/10] w-full items-center justify-center overflow-hidden rounded-xl bg-[var(--accent-light)]">
@@ -41,10 +42,25 @@ export default function CategoryCard({ category }: CategoryCardProps) {
           />
         )}
 
+        {/* Featured Badge */}
         {category.isFeatured && (
-          <span className="absolute left-2 top-2 rounded-full bg-[var(--brand-yellow)] px-2.5 py-1 text-[10px] font-bold text-[var(--brand-navy)]">
-            Featured
-          </span>
+          <div className="absolute left-0 top-0 z-20 flex items-stretch drop-shadow-sm">
+            <span className="rounded-tl-[15px] bg-[var(--brand-yellow)] py-1.5 pl-4 pr-1 text-[10px] font-bold uppercase tracking-wide text-[var(--brand-navy)]">
+              Featured
+            </span>
+
+            <svg
+              className="w-4 shrink-0 self-stretch"
+              viewBox="0 0 100 100"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M100 0 C 50 0, 95 100, 0 100 V 0 Z"
+                fill="var(--brand-yellow)"
+              />
+            </svg>
+          </div>
         )}
       </div>
 

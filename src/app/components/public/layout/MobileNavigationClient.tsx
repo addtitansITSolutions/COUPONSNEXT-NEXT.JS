@@ -184,7 +184,7 @@ export default function MobileNavigationClient({ categories, }: MobileNavigation
                         {categories.map((category) => (
                         <Link
                             key={category.id}
-                            href={`/category/${category.slug}`}
+                            href={`/categories/${category.slug}`}
                             onClick={closeMenu}
                             className="flex items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-[var(--accent-light)] hover:text-[var(--brand-purple)]"
                             style={{ color: "var(--foreground)" }}
@@ -202,7 +202,7 @@ export default function MobileNavigationClient({ categories, }: MobileNavigation
                         ))}
 
                         <Link
-                        href="/category"
+                        href="/categories"
                         onClick={closeMenu}
                         className="mt-2 flex min-h-11 items-center justify-between rounded-xl border px-3 py-3 text-sm font-bold transition-colors hover:bg-[var(--accent-light)]"
                         style={{

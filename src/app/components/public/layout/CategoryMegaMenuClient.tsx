@@ -38,7 +38,7 @@ export default function CategoryMegaMenuClient({
       }}
     >
       <Link
-        href="/category"
+        href="/categories"
         aria-haspopup="true"
         aria-expanded={open}
         onFocus={() => setOpen(true)}
@@ -121,7 +121,7 @@ export default function CategoryMegaMenuClient({
               {visibleCategories.map((category, index) => (
                 <Link
                   key={category.id}
-                  href={`/category/${category.slug}`}
+                  href={`/categories/${category.slug}`}
                   onClick={() => setOpen(false)}
                   className="group flex min-w-0 items-start gap-3 rounded-xl p-3 transition-colors hover:bg-[var(--accent-light)] focus-visible:bg-[var(--accent-light)] focus-visible:outline-none"
                 >
@@ -174,7 +174,7 @@ export default function CategoryMegaMenuClient({
               style={{ borderColor: "var(--border)" }}
             >
               <Link
-                href="/category"
+                href="/categories"
                 onClick={() => setOpen(false)}
                 className="flex items-center justify-between rounded-xl px-4 py-3 text-sm font-bold transition-colors hover:bg-[var(--accent-hover)]"
                 style={{

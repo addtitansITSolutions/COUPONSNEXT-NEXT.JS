@@ -97,7 +97,7 @@ export default function CategorySidebar() {
       </div>
 
       {/* Explore deals CTA */}
-      <div className="relative overflow-hidden rounded-2xl border border-[var(--brand-purple)]/15 bg-[var(--accent-light)] p-5">
+      {/* <div className="relative overflow-hidden rounded-2xl border border-[var(--brand-purple)]/15 bg-[var(--accent-light)] p-5">
         <div className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-[var(--brand-purple)]/10 blur-2xl" />
 
         <div className="relative">
@@ -122,20 +122,7 @@ export default function CategorySidebar() {
             <ArrowRight size={16} />
           </Link>
         </div>
-      </div>
-
-      {/* Small reminder */}
-      <div className="flex items-start gap-3 rounded-2xl border border-[var(--border)] bg-white p-4">
-        <Tag
-          size={19}
-          className="mt-0.5 shrink-0 text-[var(--brand-purple)]"
-        />
-
-        <p className="text-xs leading-5 text-[var(--muted)]">
-          Always check the offer details, expiry date, and terms before
-          completing your purchase.
-        </p>
-      </div>
+      </div> */}
     </aside>
   );
 }

@@ -8,7 +8,7 @@ const footerGroups = [
     links: [
       { label: "All stores", href: "/stores" },
       { label: "Coupons & deals", href: "/coupons" },
-      { label: "Categories", href: "/category" },
+      { label: "Categories", href: "/categories" },
       { label: "Our blog", href: "/blog" },
     ],
   },
