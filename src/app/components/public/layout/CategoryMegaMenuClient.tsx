@@ -143,7 +143,7 @@ export default function CategoryMegaMenuClient({
 
                   <span className="min-w-0 flex-1">
                     <span
-                      className="block text-sm font-semibold transition-colors group-hover:text-[var(--brand-purple)]"
+                      className="line-clamp-2 text-sm font-semibold transition-colors group-hover:text-[var(--brand-purple)]"
                       style={{ color: "var(--foreground)" }}
                     >
                       {category.name}
@@ -151,7 +151,7 @@ export default function CategoryMegaMenuClient({
 
                     {category.description && (
                       <span
-                        className="mt-1 block text-xs leading-4"
+                        className="mt-1 line-clamp-2 text-xs leading-4"
                         style={{ color: "var(--muted)" }}
                       >
                         {category.description}
