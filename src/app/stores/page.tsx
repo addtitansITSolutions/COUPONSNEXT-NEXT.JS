@@ -1,7 +1,5 @@
-
 import { Suspense } from "react";
 import type { Metadata } from "next";
-
 import PublicHeader from "@/components/public/layout/PublicHeader";
 import PublicFooter from "@/components/public/layout/PublicFooter";
 import StoresClient from "@/components/public/stores/StoresClient";
