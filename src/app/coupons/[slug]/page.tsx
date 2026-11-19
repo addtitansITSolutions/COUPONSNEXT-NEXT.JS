@@ -140,9 +140,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function CouponPage({
-  params,
-}: CouponPageProps) {
+export default async function CouponPage({ params, }: CouponPageProps) {
   const { slug } = await params;
 
   await connectDB();

@@ -142,7 +142,7 @@ const secondaryNavigation = [
   { label: "All stores", href: "/stores" },
   { label: "Latest coupons", href: "/coupons" },
   { label: "Latest deals", href: "/coupons?type=deal" },
-  { label: "Latest articles", href: "/blog" },
+  { label: "Latest articles", href: "/blogs?sort=latest" },
 ];
 
 export default function PublicHeader() {

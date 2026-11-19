@@ -146,7 +146,7 @@ const STYLES = `
 
 /* Background glow */
 .cn-glow {
-  position: absolute;
+  position: absolute; 
   inset: 0;
   background:
     radial-gradient(

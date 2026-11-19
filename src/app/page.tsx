@@ -9,6 +9,7 @@ import FeaturedCoupons from "@/components/public/home/FeaturedCoupons";
 import HowCouponsNextWorks from "@/components/public/home/HowCouponsNextWorks";
 import HomeFinalBanner from "@/components/public/home/HomeFinalBanner";
 import PopularCoupons from "@/components/public/home/PopularCoupons";
+import FeaturedBlogs from "./components/public/home/FeaturedBlogs";
 
 export const dynamic = "force-dynamic";
 
@@ -39,6 +40,7 @@ export default function HomePage() {
         <FeaturedStores />
         <FeaturedCoupons />
         <HowCouponsNextWorks />
+        <FeaturedBlogs />
         <HomeFinalBanner />
         
         
