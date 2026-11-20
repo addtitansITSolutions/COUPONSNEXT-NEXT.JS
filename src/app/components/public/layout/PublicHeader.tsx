@@ -1,53 +1,57 @@
 // import CategoryMegaMenu from "./CategoryMegaMenu";
 // import HeaderAuthActions from "./HeaderAuthActions";
 // import Link from "next/link";
-// import { Search, ChevronDown, ArrowUpRight } from "lucide-react";
+// import { Search } from "lucide-react";
 // import MobileNavigation from "./MobileNavigation";
 
 // const navigation = [
 //   { label: "Home", href: "/" },
 //   { label: "Stores", href: "/stores" },
 //   { label: "Coupons", href: "/coupons" },
-//   { label: "Blog", href: "/blog" },
+//   { label: "Blog", href: "/blogs" },
 // ];
 
 // const secondaryNavigation = [
 //   { label: "All stores", href: "/stores" },
 //   { label: "Latest coupons", href: "/coupons" },
 //   { label: "Latest deals", href: "/coupons?type=deal" },
-//   { label: "Latest articles", href: "/blog" },
+//   { label: "Latest articles", href: "/blogs?sort=latest" },
 // ];
 
 // export default function PublicHeader() {
 //   return (
 //     <header
-//       className="sticky top-0 z-999 border-b"
+//       className="sticky top-0 z-[999] border-b"
 //       style={{
 //         backgroundColor: "var(--background)",
 //         borderColor: "var(--border)",
 //       }}
 //     >
 //       {/* Primary header */}
-//       <div className="mx-auto flex h-[68px] max-w-7xl items-center gap-3 px-4 sm:h-[76px] sm:gap-5 sm:px-6 lg:px-8">
-//         {/* Mobile menu — left side */}
-//         <div className="md:hidden">
-//           <MobileNavigation />
+//       <div className="mx-auto flex h-[68px] max-w-7xl items-center justify-between gap-3 px-4 sm:h-[76px] sm:gap-5 sm:px-6 lg:px-8">
+        
+//         {/* Left Side Group: Mobile Menu + Logo */}
+//         <div className="flex items-center gap-3">
+//           {/* Mobile menu — left side */}
+//           <div className="md:hidden">
+//             <MobileNavigation />
+//           </div>
+
+//           {/* Logo */}
+//           <Link
+//             href="/"
+//             aria-label="CouponsNext homepage"
+//             className="shrink-0 font-heading text-[20px] font-extrabold tracking-tight sm:text-2xl"
+//           >
+//             <span style={{ color: "var(--brand-purple)" }}>Coupons</span>
+//             <span style={{ color: "var(--brand-yellow)" }}>Next</span>
+//           </Link>
 //         </div>
 
-//         {/* Logo */}
-//         <Link
-//           href="/"
-//           aria-label="CouponsNext homepage"
-//           className="shrink-0 font-heading text-[20px] font-extrabold tracking-tight sm:text-2xl"
-//         >
-//           <span style={{ color: "var(--brand-purple)" }}>Coupons</span>
-//           <span style={{ color: "var(--brand-yellow)" }}>Next</span>
-//         </Link>
-
-//         {/* Desktop search */}
+//         {/* Center: Desktop search */}
 //         <form
 //           action="/search"
-//           className="relative hidden max-w-md flex-1 lg:block"
+//           className="relative hidden max-w-md flex-1 lg:mx-4 lg:block"
 //         >
 //           <Search
 //             size={18}
@@ -67,10 +71,10 @@
 //           />
 //         </form>
 
-//         {/* Desktop navigation */}
+//         {/* Center-Right: Desktop navigation */}
 //         <nav
 //           aria-label="Main navigation"
-//           className="ml-auto hidden items-center gap-5 md:flex lg:gap-6"
+//           className="hidden items-center gap-5 md:flex lg:gap-6"
 //         >
 //           {navigation.map((item) => (
 //             <Link
@@ -89,10 +93,11 @@
 //           ))}
 //         </nav>
 
-//         {/* Explore deals — right side on mobile and desktop */}
-//         <HeaderAuthActions />
+//         {/* Far Right: Auth Action buttons (Anchored on Mobile & Desktop) */}
+//         <div className="ml-auto flex shrink-0 items-center justify-end md:ml-0">
+//           <HeaderAuthActions />
+//         </div>
 //       </div>
-
 
 //       {/* Secondary navigation — desktop */}
 //       <div
@@ -125,11 +130,17 @@
 
 
 
+
+
+
+
+
+import Link from "next/link";
+
 import CategoryMegaMenu from "./CategoryMegaMenu";
 import HeaderAuthActions from "./HeaderAuthActions";
-import Link from "next/link";
-import { Search } from "lucide-react";
 import MobileNavigation from "./MobileNavigation";
+import GlobalSearch from "./GlobalSearch";
 
 const navigation = [
   { label: "Home", href: "/" },
@@ -156,49 +167,36 @@ export default function PublicHeader() {
     >
       {/* Primary header */}
       <div className="mx-auto flex h-[68px] max-w-7xl items-center justify-between gap-3 px-4 sm:h-[76px] sm:gap-5 sm:px-6 lg:px-8">
-        
-        {/* Left Side Group: Mobile Menu + Logo */}
-        <div className="flex items-center gap-3">
-          {/* Mobile menu — left side */}
+
+        {/* Left: Mobile menu + Logo */}
+        <div className="flex shrink-0 items-center gap-3">
+
           <div className="md:hidden">
             <MobileNavigation />
           </div>
 
-          {/* Logo */}
           <Link
             href="/"
             aria-label="CouponsNext homepage"
             className="shrink-0 font-heading text-[20px] font-extrabold tracking-tight sm:text-2xl"
           >
-            <span style={{ color: "var(--brand-purple)" }}>Coupons</span>
-            <span style={{ color: "var(--brand-yellow)" }}>Next</span>
+            <span style={{ color: "var(--brand-purple)" }}>
+              Coupons
+            </span>
+            <span style={{ color: "var(--brand-yellow)" }}>
+              Next
+            </span>
           </Link>
         </div>
 
-        {/* Center: Desktop search */}
-        <form
-          action="/search"
-          className="relative hidden max-w-md flex-1 lg:mx-4 lg:block"
-        >
-          <Search
-            size={18}
-            className="absolute left-4 top-1/2 -translate-y-1/2"
-            style={{ color: "var(--muted)" }}
-          />
-          <input
-            name="q"
-            type="search"
+        {/* Desktop Search: Large screens */}
+        <div className="hidden max-w-md flex-1 lg:mx-4 lg:block">
+          <GlobalSearch
             placeholder="Search stores, coupons and deals..."
-            className="h-11 w-full rounded-xl border pl-11 pr-4 text-sm outline-none transition focus:border-[var(--brand-purple)]"
-            style={{
-              borderColor: "var(--border)",
-              backgroundColor: "var(--background)",
-              color: "var(--foreground)",
-            }}
           />
-        </form>
+        </div>
 
-        {/* Center-Right: Desktop navigation */}
+        {/* Main Navigation */}
         <nav
           aria-label="Main navigation"
           className="hidden items-center gap-5 md:flex lg:gap-6"
@@ -220,23 +218,31 @@ export default function PublicHeader() {
           ))}
         </nav>
 
-        {/* Far Right: Auth Action buttons (Anchored on Mobile & Desktop) */}
+        {/* Authentication Actions */}
         <div className="ml-auto flex shrink-0 items-center justify-end md:ml-0">
           <HeaderAuthActions />
         </div>
       </div>
 
-      {/* Secondary navigation — desktop */}
+      {/* Secondary Navigation */}
       <div
         className="hidden border-t md:block"
         style={{ borderColor: "var(--border)" }}
       >
-        <div className="mx-auto flex h-11 max-w-7xl items-center justify-between gap-6 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex min-h-11 max-w-7xl items-center justify-between gap-6 px-4 py-2 sm:px-6 lg:px-8">
+
+          {/* Categories */}
           <CategoryMegaMenu />
 
+          {/* Medium screen search */}
+          <div className="mx-auto hidden w-full max-w-[280px] flex-1 md:flex md:items-center lg:hidden">
+            <GlobalSearch placeholder="Search stores, coupons and deals..." />
+          </div>
+
+          {/* Quick Links */}
           <nav
             aria-label="Quick links"
-            className="flex min-w-0 items-center gap-4 lg:gap-6"
+            className="flex min-w-0 shrink-0 items-center gap-4 lg:gap-6"
           >
             {secondaryNavigation.map((item) => (
               <Link

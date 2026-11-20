@@ -519,7 +519,7 @@ export default function BlogsClient({
 
           {/* Desktop sidebar */}
           <aside className="hidden lg:block">
-            <div className="sticky top-32">
+            <div className="sticky top-36">
               <BlogFilters {...filtersProps} />
             </div>
           </aside>
