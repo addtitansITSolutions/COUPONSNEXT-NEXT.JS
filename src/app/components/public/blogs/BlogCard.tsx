@@ -39,7 +39,7 @@ export default function BlogCard({ blog }: BlogCardProps) {
 
       {/* Featured Image */}
       <Link
-        href={`/blog/${blog.slug}`}
+        href={`/blogs/${blog.slug}`}
         aria-label={`Read ${blog.title}`}
         className="relative block aspect-[16/10] overflow-hidden bg-[var(--accent-light)]"
       >
@@ -126,7 +126,7 @@ export default function BlogCard({ blog }: BlogCardProps) {
 
         {/* Title */}
         <h2 className="mb-3 line-clamp-2 text-lg font-bold leading-snug tracking-tight text-[var(--brand-navy)] transition-colors duration-300 group-hover:text-[var(--brand-purple)] sm:text-xl">
-          <Link href={`/blog/${blog.slug}`}>
+          <Link href={`/blogs/${blog.slug}`}>
             {blog.title}
           </Link>
         </h2>
@@ -143,7 +143,7 @@ export default function BlogCard({ blog }: BlogCardProps) {
           </span>
 
           <Link
-            href={`/blog/${blog.slug}`}
+            href={`/blogs/${blog.slug}`}
             className="inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--brand-purple)] transition-all duration-300 hover:gap-2.5 hover:text-[var(--accent-hover)]"
           >
             Read article

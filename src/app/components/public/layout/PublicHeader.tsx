@@ -135,7 +135,7 @@ const navigation = [
   { label: "Home", href: "/" },
   { label: "Stores", href: "/stores" },
   { label: "Coupons", href: "/coupons" },
-  { label: "Blog", href: "/blog" },
+  { label: "Blog", href: "/blogs" },
 ];
 
 const secondaryNavigation = [

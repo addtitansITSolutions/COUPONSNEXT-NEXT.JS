@@ -6,6 +6,7 @@ import PublicFooter from "@/components/public/layout/PublicFooter";
 import CategoriesHero from "@/components/public/categories/CategoriesHero";
 import CategoryStoresSection from "@/components/public/category/CategoryStoresSection";
 import CategoryCouponsSection from "@/components/public/category/CategoryCouponsSection";
+import CategoryBlogsSection from "@/components/public/category/CategoryBlogsSection";
 
 interface CategoryPageProps {
   params: Promise<{
@@ -51,10 +52,18 @@ export default async function CategoryPage({
           categoryName={categoryName}
         />
 
+
         {/* Related Coupons */}
         <CategoryCouponsSection
             categorySlug={slug}
             categoryName={categoryName}
+        />
+
+
+        {/* Related Blogs */}
+        <CategoryBlogsSection
+          categorySlug={slug}
+          categoryName={categoryName}
         />
 
         {/* Related Coupons will go here next */}

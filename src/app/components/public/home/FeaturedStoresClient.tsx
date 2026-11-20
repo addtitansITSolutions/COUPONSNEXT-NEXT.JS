@@ -197,7 +197,7 @@ export default function FeaturedStoresClient({
                     className="mt-4 block rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand-yellow)]"
                   >
                     <h3
-                      className="font-heading text-lg font-bold tracking-tight text-[var(--brand-white)] sm:text-xl"
+                      className="font-heading line-clamp-1 text-lg font-bold tracking-tight text-[var(--brand-white)] sm:text-xl"
                     >
                       {store.name}
                     </h3>

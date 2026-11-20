@@ -3,6 +3,7 @@ import { DM_Sans, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { ToastProvider } from "@/components/ui/toast/ToastProvider";
+import NextTopLoader from "nextjs-toploader";
 
 const dmSans = DM_Sans({
   variable: "--font-dm-sans",
@@ -29,6 +30,18 @@ export default function RootLayout({ children, }: Readonly<{ children: React.Rea
       <body className={`${dmSans.variable} ${plusJakarta.variable}`}>
         <ToastProvider>
           <AuthProvider>
+            <NextTopLoader
+              color="var(--brand-purple)"
+              initialPosition={0.08}
+              crawlSpeed={200}
+              height={3}
+              crawl
+              showSpinner={false}
+              easing="ease"
+              speed={200}
+              shadow="0 0 10px var(--brand-purple), 0 0 5px var(--brand-purple)"
+              zIndex={9999}
+            />
             {children}
           </AuthProvider>
         </ToastProvider>
