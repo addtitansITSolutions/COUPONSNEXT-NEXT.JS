@@ -39,3 +39,9 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 ## Tree folder structure
 PS C:\NEXTJS\couponsnext> -------------->        tree src\app /F
+
+
+
+
+## As we have db export import feature , so we have to download 
+MongoDumb on Digital Ocean as well - A mongo Database tool (And need to configure as well )

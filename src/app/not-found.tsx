@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Home, Search } from "lucide-react";
 import GoBackButton from "@/components/public/GoBackButton";
