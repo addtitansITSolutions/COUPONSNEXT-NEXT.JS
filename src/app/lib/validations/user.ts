@@ -37,3 +37,28 @@ export const userQuerySchema = z.object({
 });
 
 export type UserQueryInput = z.infer<typeof userQuerySchema>;
+
+
+
+
+export const userUpdateSchema = z
+  .object({
+    name: z
+      .string()
+      .trim()
+      .min(2, "Name must contain at least 2 characters")
+      .max(100, "Name cannot exceed 100 characters")
+      .optional(),
+
+    role: userRoleSchema.optional(),
+
+    isActive: z.boolean().optional(),
+  })
+  .strict()
+  .refine(
+    (data) => Object.keys(data).length > 0,
+    "At least one field is required"
+  );
+
+export type UserUpdateInput = z.infer<typeof userUpdateSchema>;
+

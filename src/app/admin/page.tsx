@@ -1,9 +1,15 @@
-export default function AdminPage() {
+
+import { requireAdmin } from "@/lib/auth-guards";
+import UsersDashboard from "./components/UsersDashboard";
+
+export const dynamic = "force-dynamic";
+
+export default async function AdminPage() {
+  const currentAdmin = await requireAdmin();
+
   return (
-    <main className="p-6">
-      <h1 className="text-2xl font-semibold">
-        Admin Dashboard f
-      </h1>
-    </main>
+    <UsersDashboard
+      currentAdminId={currentAdmin._id.toString()}
+    />
   );
 }
