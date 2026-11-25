@@ -249,27 +249,125 @@ export default async function SingleBlogPage({
   // Popular Blogs (sidebar) — ordered by viewCount
   // --------------------------------------------------
 
-  const popularDocuments = (await Blog.find({
-    _id: { $ne: blog._id },
-    status: "published",
-    isActive: true,
-    publishedAt: { $lte: new Date() },
-  })
-    .select(
-      "title slug featuredImage category viewCount isFeatured publishedAt"
-    )
-    .populate({
-      path: "category",
-      select: "name slug",
-      match: { isActive: true },
-    })
-    .sort({
-      viewCount: -1,
-      publishedAt: -1,
-      _id: -1,
-    })
-    .limit(POPULAR_BLOGS_LIMIT)
-    .lean()) as unknown as PopularPopulatedBlog[];
+  // const popularDocuments = (await Blog.find({
+  //   _id: { $ne: blog._id },
+  //   status: "published",
+  //   isActive: true,
+  //   publishedAt: { $lte: new Date() },
+  // })
+  //   .select(
+  //     "title slug featuredImage category viewCount isFeatured publishedAt"
+  //   )
+  //   .populate({
+  //     path: "category",
+  //     select: "name slug",
+  //     match: { isActive: true },
+  //   })
+  //   .sort({
+  //     viewCount: -1,
+  //     publishedAt: -1,
+  //     _id: -1,
+  //   })
+  //   .limit(POPULAR_BLOGS_LIMIT)
+  //   .lean()) as unknown as PopularPopulatedBlog[];
+
+
+    const popularDocuments = (await Blog.aggregate([
+    {
+      $match: {
+        _id: { $ne: blog._id },
+        status: "published",
+        isActive: true,
+        publishedAt: { $lte: new Date() },
+      },
+    },
+
+    // Include only blogs whose author exists and is active
+    {
+      $lookup: {
+        from: "users",
+        let: { authorId: "$author" },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $eq: ["$_id", "$$authorId"],
+              },
+              isActive: true,
+            },
+          },
+          {
+            $project: {
+              _id: 1,
+            },
+          },
+        ],
+        as: "author",
+      },
+    },
+
+    // Remove blogs with missing or inactive authors
+    {
+      $unwind: "$author",
+    },
+
+    // Populate category and retain only active categories
+    {
+      $lookup: {
+        from: "categories",
+        let: { categoryId: "$category" },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $eq: ["$_id", "$$categoryId"],
+              },
+              isActive: true,
+            },
+          },
+          {
+            $project: {
+              name: 1,
+              slug: 1,
+            },
+          },
+        ],
+        as: "category",
+      },
+    },
+
+    {
+      $unwind: {
+        path: "$category",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+
+    {
+      $sort: {
+        viewCount: -1,
+        publishedAt: -1,
+        _id: -1,
+      },
+    },
+
+    {
+      $limit: POPULAR_BLOGS_LIMIT,
+    },
+
+    {
+      $project: {
+        title: 1,
+        slug: 1,
+        featuredImage: 1,
+        category: 1,
+        author: 1,
+        viewCount: 1,
+        isFeatured: 1,
+        publishedAt: 1,
+      },
+    },
+  ])) as PopularPopulatedBlog[];
 
   const popularBlogs: PopularBlog[] = popularDocuments.map((popular) => ({
     title: popular.title,
