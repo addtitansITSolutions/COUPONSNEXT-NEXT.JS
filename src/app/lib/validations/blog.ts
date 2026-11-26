@@ -48,24 +48,24 @@ const optionalImageSchema = z.preprocess(
   ]).optional()
 );
 
-const optionalObjectIdSchema = ( fieldName: string, allowNone = false ) =>
-  z.preprocess(
-    (value) =>
-      typeof value === "string" && value.trim() === ""
-        ? undefined
-        : value,
-    z
-      .string({
-        error: `${fieldName} must be a text value`,
-      })
-      .refine(
-        (value) =>
-          (allowNone && value === "__none__") ||
-          /^[a-f\d]{24}$/i.test(value),
-        `Please select a valid ${fieldName.toLowerCase()}`
-      )
-      .optional()
-  );
+// const optionalObjectIdSchema = ( fieldName: string, allowNone = false ) =>
+//   z.preprocess(
+//     (value) =>
+//       typeof value === "string" && value.trim() === ""
+//         ? undefined
+//         : value,
+//     z
+//       .string({
+//         error: `${fieldName} must be a text value`,
+//       })
+//       .refine(
+//         (value) =>
+//           (allowNone && value === "__none__") ||
+//           /^[a-f\d]{24}$/i.test(value),
+//         `Please select a valid ${fieldName.toLowerCase()}`
+//       )
+//       .optional()
+//   );
 
 const optionalCategorySchema = z.preprocess(
   (value) => {
@@ -89,23 +89,23 @@ const optionalCategorySchema = z.preprocess(
     .optional()
 );
 
-const httpUrlSchema = z
-  .string({
-    error: "URL must be a text value",
-  })
-  .trim()
-  .url("Please enter a valid URL")
-  .refine(
-    (value) => {
-      try {
-        const url = new URL(value);
-        return ["http:", "https:"].includes(url.protocol);
-      } catch {
-        return false;
-      }
-    },
-    "URL must use HTTP or HTTPS"
-  );
+// const httpUrlSchema = z
+//   .string({
+//     error: "URL must be a text value",
+//   })
+//   .trim()
+//   .url("Please enter a valid URL")
+//   .refine(
+//     (value) => {
+//       try {
+//         const url = new URL(value);
+//         return ["http:", "https:"].includes(url.protocol);
+//       } catch {
+//         return false;
+//       }
+//     },
+//     "URL must use HTTP or HTTPS"
+//   );
 
 const optionalUrlSchema = (fieldName: string) =>
   z.preprocess(

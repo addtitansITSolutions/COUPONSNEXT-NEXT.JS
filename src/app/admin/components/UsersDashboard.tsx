@@ -763,7 +763,7 @@ export default function UsersDashboard({
             </h2>
 
             <p className="mt-1 text-sm text-gray-500">
-              Update the user's display name.
+              Update the user&lsquo;s display name.
             </p>
 
             <form

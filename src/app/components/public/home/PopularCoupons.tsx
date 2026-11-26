@@ -1,7 +1,7 @@
 import { connectDB } from "@/lib/mongodb";
 import Coupon from "@/models/Coupon";
 
-import PopularPartnersClient, {
+import {
   type PopularCouponItem,
 } from "./PopularPartnersClient";
 

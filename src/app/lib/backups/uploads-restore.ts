@@ -6,7 +6,6 @@ import {
   lstat,
   mkdir,
   mkdtemp,
-  readdir,
   rename,
   rm,
 } from "node:fs/promises";

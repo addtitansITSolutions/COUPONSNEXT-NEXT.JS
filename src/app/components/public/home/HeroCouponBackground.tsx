@@ -17,7 +17,7 @@ function mulberry32(seed: number) {
 }
 const R = mulberry32(77);
 const between = (a: number, b: number) => +(a + R() * (b - a)).toFixed(2);
-const pick = <T,>(arr: T[]) => arr[Math.floor(R() * arr.length)];
+// const pick = <T,>(arr: T[]) => arr[Math.floor(R() * arr.length)];
 
 const FACE_ICONS: LucideIcon[] = [Percent, Tag, Gift, Ticket, ShoppingBag, Star];
 const FACE_CLASSES = ["fs-f1", "fs-f2", "fs-f3", "fs-f4", "fs-f5", "fs-f6"];

@@ -50,7 +50,7 @@ export default function BlogLoadMore({
   return (
     <div className="flex items-center justify-center gap-2 py-10 text-sm font-medium text-[var(--muted)]">
       <CheckCircle2 className="h-4 w-4 text-[var(--brand-purple)]" />
-      You've reached the end of the articles.
+      You&lsquo;ve reached the end of the articles.
     </div>
   );
 }

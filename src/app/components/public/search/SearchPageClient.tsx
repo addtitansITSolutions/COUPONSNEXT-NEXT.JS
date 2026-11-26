@@ -16,7 +16,6 @@ import {
   TicketPercent,
   BookOpen,
   Tags,
-  ArrowRight,
   X,
 } from "lucide-react";
 

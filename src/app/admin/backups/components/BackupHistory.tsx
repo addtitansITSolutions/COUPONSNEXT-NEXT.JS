@@ -9,7 +9,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Database,
-  Download,
   FileArchive,
   HardDrive,
   Loader2,

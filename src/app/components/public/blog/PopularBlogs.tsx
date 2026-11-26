@@ -120,7 +120,6 @@ function CategoryLabel({ name }: { name: string }) {
 
 function PopularBlogItem({
   blog,
-  index,
   basePath,
 }: {
   blog: PopularBlog;

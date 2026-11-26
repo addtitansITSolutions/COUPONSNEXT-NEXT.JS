@@ -452,7 +452,7 @@ export default function CategoriesClient() {
                 </h3>
 
                 <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-[var(--muted)]">
-                  We couldn't find any categories matching your search.
+                  We couldn&lsquo;t find any categories matching your search.
                   Try another search or browse all categories.
                 </p>
 
@@ -554,7 +554,7 @@ export default function CategoriesClient() {
                     Category Filters
                     </h2>
                     <p className="mt-1 text-xs text-[var(--muted)]">
-                    Find exactly what you're looking for.
+                    Find exactly what you&lsquo;re looking for.
                     </p>
                 </div>
 

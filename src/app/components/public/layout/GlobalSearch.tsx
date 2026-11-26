@@ -599,7 +599,7 @@ export default function GlobalSearch({
                   className="flex items-center justify-between rounded-xl px-3 py-2.5 text-xs font-semibold text-[var(--brand-purple)] transition-colors hover:bg-[var(--brand-purple)]/8"
                 >
                   <span>
-                    View all {totalResults} results for "{query.trim()}"
+                    View all {totalResults} results for &quot;{query.trim()}&quot;
                   </span>
 
                   <ArrowRight size={15} />

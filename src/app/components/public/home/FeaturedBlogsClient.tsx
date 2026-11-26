@@ -6,12 +6,10 @@ import Link from "next/link";
 import {
   ArrowLeft,
   ArrowRight,
-  BookOpen,
-  Sparkles,
 } from "lucide-react";
 
 import BlogCard from "@/components/public/blogs/BlogCard";
-import { motion, useReducedMotion, type Variants } from "framer-motion";
+import { motion } from "framer-motion";
 
 export interface FeaturedBlogItem {
   id: string;
