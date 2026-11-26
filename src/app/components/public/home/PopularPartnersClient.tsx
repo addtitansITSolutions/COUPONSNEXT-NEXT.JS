@@ -99,7 +99,7 @@ export default function PopularPartnersClient({
         {/* Auto-Rotating Coupons */}
         <div className="space-y-2 overflow-hidden p-3">
           <AnimatePresence initial={false} mode="popLayout">
-            {visibleCoupons.map((coupon, index) => {
+            {visibleCoupons.map((coupon) => {
               const imageSrc = coupon.image || coupon.store.logo;
 
               return (

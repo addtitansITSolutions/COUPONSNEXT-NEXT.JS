@@ -88,7 +88,7 @@ export default function UserDeleteModal({
             <span className="font-semibold text-gray-900">
               {user.name}
             </span>
-            's account?
+            &lsquo;s account?
           </p>
 
           <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">

@@ -1,14 +1,9 @@
-
-import Link from "next/link";
 import {
   BadgeCheck,
-  ArrowRight,
   Search,
-  Tag,
   Copy,
   ShoppingBag,
   Lightbulb,
-  Sparkles,
 } from "lucide-react";
 
 const savingSteps = [

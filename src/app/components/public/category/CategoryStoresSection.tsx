@@ -6,7 +6,6 @@ import Link from "next/link";
 import {
   ArrowLeft,
   ArrowRight,
-  Sparkles,
   Store,
 } from "lucide-react";
 

@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { ArrowRight, BookOpen, Search } from "lucide-react";
+import { BookOpen, Search } from "lucide-react";
 
 interface BlogEmptyStateProps {
   onClearFilters: () => void;
@@ -26,7 +25,7 @@ export default function BlogEmptyState({
       </h3>
 
       <p className="mb-8 max-w-md text-sm leading-7 text-[var(--muted)]">
-        We couldn't find any articles matching your search or selected filters.
+        We couldn&lsquo;t find any articles matching your search or selected filters.
         Try adjusting your search or explore all our latest shopping guides and
         money-saving tips.
       </p>

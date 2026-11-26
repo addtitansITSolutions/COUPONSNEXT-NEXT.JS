@@ -119,7 +119,7 @@ export default function HowCouponsNextWorks() {
           ref={scrollRef}
           className="flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-5"
         >
-          {steps.map((step, index) => {
+          {steps.map((step) => {
             const Icon = step.icon;
 
             return (

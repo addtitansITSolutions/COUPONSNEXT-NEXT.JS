@@ -22,9 +22,9 @@ const ALLOWED_TYPES = [
   "image/webp",
 ];
 
-function isLocalUpload(url: string): boolean {
-  return url.startsWith("/uploads/") && !url.startsWith("//");
-}
+// function isLocalUpload(url: string): boolean {
+//   return url.startsWith("/uploads/") && !url.startsWith("//");
+// }
 
 async function uploadStoreImage( file: File, folder: "logos" | "banners" ): Promise<string> {
   const formData = new FormData();

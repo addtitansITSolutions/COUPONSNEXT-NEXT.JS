@@ -19,7 +19,7 @@ export default function CouponEmptyState({
       </h3>
 
       <p className="mt-2 max-w-sm text-sm text-[var(--muted)]">
-        We couldn't find any coupons matching your selected
+        We couldn&lsquo;t find any coupons matching your selected
         filters. Try changing or clearing your filters.
       </p>
 

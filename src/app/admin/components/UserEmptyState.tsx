@@ -3,7 +3,6 @@
 
 import {
   Users,
-  UserPlus,
   Search,
   RefreshCw,
 } from "lucide-react";

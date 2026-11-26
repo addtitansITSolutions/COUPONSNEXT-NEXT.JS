@@ -2,7 +2,6 @@ import Link from "next/link";
 import {
   ArrowRight,
   TicketPercent,
-  Sparkles,
   Tag,
   ShoppingBag,
 } from "lucide-react";
@@ -56,7 +55,7 @@ export default function HomeFinalBanner() {
           </h2>
 
           <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-white/70 sm:text-base sm:leading-8">
-            Don't pay more than you should. Explore amazing
+            Don&lsquo;t pay more than you should. Explore amazing
             coupon codes and exclusive deals from your favorite
             stores with CouponsNext.
           </p>

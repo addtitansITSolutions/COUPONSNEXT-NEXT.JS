@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import mongoose from "mongoose";
 import { connectDB } from "@/lib/mongodb";
 import Coupon from "@/models/Coupon";
-import Store from "@/models/Store";
+// import Store from "@/models/Store";
 import PublicHeader from "@/components/public/layout/PublicHeader";
 import PublicFooter from "@/components/public/layout/PublicFooter";
 import CouponBreadcrumb from "@/components/public/coupon/CouponBreadcrumb";

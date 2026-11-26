@@ -4,7 +4,6 @@ import Link from "next/link";
 import {
   ArrowLeft,
   ArrowRight,
-  ArrowUpRight,
 } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 

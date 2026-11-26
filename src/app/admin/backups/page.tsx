@@ -1,10 +1,6 @@
-
 "use client";
-
 import { useCallback, useEffect, useState } from "react";
-
 import { HardDrive, RefreshCw } from "lucide-react";
-
 import RestoreSection, {
   type RestoreMode,
 } from "./components/RestoreSection";
@@ -12,7 +8,6 @@ import BackupHistory from "./components/BackupHistory";
 import BackupCard, {
   type BackupCardType,
 } from "@/components/admin/backups/BackupCard";
-
 import { toast } from "@/components/ui/toast/toast";
 
 interface SafetyBackup {
@@ -91,7 +86,11 @@ export default function BackupsPage() {
       []
     );
     useEffect(() => {
-      void fetchBackupHistory(1);
+      const timeoutId = window.setTimeout(() => {
+        void fetchBackupHistory(1);
+      }, 0);
+
+      return () => window.clearTimeout(timeoutId);
     }, [fetchBackupHistory]);
 
   /*

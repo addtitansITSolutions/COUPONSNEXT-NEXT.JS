@@ -5,9 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
-  ArrowRight,
-  BookOpen,
-  Sparkles,
+  ArrowRight
 } from "lucide-react";
 
 import BlogCard from "@/components/public/blogs/BlogCard";
@@ -109,7 +107,7 @@ export default function CategoryBlogsSection({
     if (blogs.length <= 1 || isResetting.current) return;
 
     const count = blogs.length;
-    let nextIndex = currentIndex.current + 1;
+    const nextIndex = currentIndex.current + 1;
 
     if (nextIndex >= count) {
       isResetting.current = true;
@@ -137,7 +135,7 @@ export default function CategoryBlogsSection({
     if (blogs.length <= 1 || isResetting.current) return;
 
     const count = blogs.length;
-    let previousIndex = currentIndex.current - 1;
+    const previousIndex = currentIndex.current - 1;
 
     if (previousIndex < 0) {
       isResetting.current = true;

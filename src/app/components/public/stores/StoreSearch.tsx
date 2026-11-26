@@ -1,7 +1,7 @@
 
 "use client";
 
-import { Search, X } from "lucide-react";
+import { Search } from "lucide-react";
 
 interface StoreSearchProps {
   value: string;

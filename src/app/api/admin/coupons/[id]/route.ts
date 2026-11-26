@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Types } from "mongoose";
+// import { Types } from "mongoose";
 
 import { connectDB } from "@/lib/mongodb";
 import { requireAdmin } from "@/lib/auth-guards";
 import { handleApiError } from "@/lib/errors/handleApiError";
 import { ApiError } from "@/lib/errors/ApiError";
-import { createCouponSchema, updateCouponSchema, } from "@/lib/validations/coupon";
+import { updateCouponSchema, } from "@/lib/validations/coupon";
 import { deleteUploadedImage } from "@/lib/uploads";
 import Coupon from "@/models/Coupon";
 import Store from "@/models/Store";

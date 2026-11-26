@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Home, Search } from "lucide-react";
+import { ArrowRight, Search } from "lucide-react";
 import GoBackButton from "@/components/public/GoBackButton";
 import PublicHeader from "./components/public/layout/PublicHeader";
 import PublicFooter from "./components/public/layout/PublicFooter";
@@ -59,7 +59,7 @@ export default function NotFound() {
           <p className="mx-auto mt-5 max-w-md text-sm leading-7 text-[var(--muted)] sm:text-base">
             Looks like this page has gone on a little adventure.
             The link may be broken, or the page may have been moved.
-            Let's get you back to finding amazing deals!
+            Let&lsquo;s get you back to finding amazing deals!
           </p>
         </div>
 

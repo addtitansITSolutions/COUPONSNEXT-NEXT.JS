@@ -1,6 +1,6 @@
 import { connectDB } from "@/lib/mongodb";
 import Banner from "@/models/Banner";
-import Store from "@/models/Store";
+// import Store from "@/models/Store";
 import BannerSliderClient, {
   type HomeBanner,
 } from "./BannerSliderClient";

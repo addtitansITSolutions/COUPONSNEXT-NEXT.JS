@@ -75,7 +75,7 @@ const inputClass = "w-full rounded-lg border border-[var(--border)] bg-white px-
 
 const labelClass = "mb-1.5 block text-sm font-medium text-[var(--foreground)]";
 
-const sectionClass = "rounded-xl border border-[var(--border)] bg-white p-5 sm:p-6";
+// const sectionClass = "rounded-xl border border-[var(--border)] bg-white p-5 sm:p-6";
 
 const emptyValues: CouponFormValues = {
   title: "",
@@ -158,7 +158,7 @@ export default function CouponForm({ coupon, onSubmit, onCancel, submitting = fa
   const [imageRemoved, setImageRemoved] = useState(false);
   const uploadedImageUrlsRef = useRef<Set<string>>(new Set());
   const skipUnmountCleanupRef = useRef(false);
-  const couponIdRef = useRef(coupon?.id ?? coupon?._id ?? "");
+  // const couponIdRef = useRef(coupon?.id ?? coupon?._id ?? "");
   const isEditing = Boolean(coupon?.id ?? coupon?._id);
   const isBusy = submitting || isUploading;
 

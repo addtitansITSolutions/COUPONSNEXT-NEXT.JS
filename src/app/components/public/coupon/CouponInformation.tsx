@@ -120,7 +120,7 @@ export default function CouponInformation({
                     Visit the store offer
                   </h3>
                   <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
-                    Click the Get Deal button to open the store's offer page.
+                    Click the Get Deal button to open the store&lsquo;s offer page.
                   </p>
                 </div>
               </div>
@@ -135,7 +135,7 @@ export default function CouponInformation({
                   </h3>
                   <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
                     Review the available products and offer details on the
-                    store's website.
+                    store&lsquo;s website.
                   </p>
                 </div>
               </div>
@@ -149,7 +149,7 @@ export default function CouponInformation({
                     Complete your purchase
                   </h3>
                   <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
-                    Follow the store's instructions to claim the deal and
+                    Follow the store&lsquo;s instructions to claim the deal and
                     complete your purchase.
                   </p>
                 </div>

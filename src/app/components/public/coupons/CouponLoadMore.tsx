@@ -34,7 +34,7 @@ export default function CouponLoadMore({
 
       {!hasNextPage && (
         <p className="text-xs text-[var(--muted)]">
-          You've reached the end of the coupons.
+          You&lsquo;ve reached the end of the coupons.
         </p>
       )}
     </div>
