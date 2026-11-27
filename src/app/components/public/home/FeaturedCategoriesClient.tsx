@@ -6,6 +6,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
+import Image from "next/image";
 
 export interface FeaturedCategoryItem {
   id: string;
@@ -111,11 +112,12 @@ export default function FeaturedCategoriesClient({
                 {/* Image container */}
                 <div className="absolute inset-[7px] overflow-hidden rounded-full bg-[var(--accent-light)]">
                     {category.image ? (
-                    <img
-                        src={category.image}
-                        alt={`${category.name} category`}
-                        loading="lazy"
-                        className="h-full w-full rounded-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    <Image
+                      src={category.image}
+                      alt={`${category.name} category`}
+                      fill
+                      sizes="(max-width: 639px) 46px, (max-width: 1023px) 66px, 86px"
+                      className="rounded-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
                     ) : (
                     <div className="flex h-full w-full items-center justify-center rounded-full bg-[var(--brand-purple)]/10">

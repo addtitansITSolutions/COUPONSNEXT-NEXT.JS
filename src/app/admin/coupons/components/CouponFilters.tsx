@@ -1,12 +1,9 @@
-
 "use client";
-
 import { Search, X } from "lucide-react";
-
 import type { CouponFilters as CouponFiltersType } from "@/lib/hooks/useCoupons";
 import StoreDropdown from "@/components/admin/coupons/StoreDropdown";
 import CategoryDropdown from "@/components/admin/coupons/CategoryDropdown";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 interface CouponFiltersProps {
   filters: CouponFiltersType;
@@ -37,20 +34,15 @@ export default function CouponFilters({
 }: CouponFiltersProps) {
   const [localCountry, setLocalCountry] = useState(filters.country || "");
   
-    // Keep internal country state in sync if parent resets or clears
-    useEffect(() => {
-      setLocalCountry(filters.country || "");
-    }, [filters.country]);
-  
-    const handleCountryInputChange = (value: string) => {
-      const sanitized = value.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 2);
-      setLocalCountry(sanitized);
-  
-      // Only fire upstream API filter if length is 2 or fully cleared back to 0
-      if (sanitized.length === 2 || sanitized.length === 0) {
-        onCountryChange(sanitized);
-      }
-    };
+  const handleCountryInputChange = (value: string) => {
+    const sanitized = value.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 2);
+
+    setLocalCountry(sanitized);
+
+    if (sanitized.length === 2 || sanitized.length === 0) {
+      onCountryChange(sanitized);
+    }
+  };
 
 
 
@@ -95,7 +87,10 @@ export default function CouponFilters({
         {hasFilters && (
           <button
             type="button"
-            onClick={onClear}
+            onClick={() => {
+              setLocalCountry("");
+              onClear();
+            }}
             className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg border border-gray-200 px-3 text-sm font-medium text-gray-600 transition hover:bg-gray-50 hover:text-gray-900"
           >
             <X size={15} />

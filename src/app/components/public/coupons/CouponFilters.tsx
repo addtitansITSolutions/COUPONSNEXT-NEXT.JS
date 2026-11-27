@@ -55,9 +55,9 @@ export default function CouponFilters({
 }: CouponFiltersProps) {
   const [searchValue, setSearchValue] = useState(filters.search);
 
-  useEffect(() => {
-    setSearchValue(filters.search);
-  }, [filters.search]);
+  // useEffect(() => {
+  //   setSearchValue(filters.search);
+  // }, [filters.search]);
 
   useEffect(() => {
     const timer = setTimeout(() => {

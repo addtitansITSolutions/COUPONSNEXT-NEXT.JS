@@ -88,7 +88,17 @@ export default function CategoryStoresSection({
         }
 
         if (isCurrentRequest) {
-          setStores(result.stores ?? []);
+          const nextStores = result.stores ?? [];
+          currentIndex.current = 0;
+          setActiveIndex(0);
+          setStores(nextStores);
+
+          if (carouselRef.current) {
+            carouselRef.current.scrollTo({
+              left: 0,
+              behavior: "instant",
+            });
+          }setStores(result.stores ?? []);
         }
       } catch (err) {
         if (err instanceof Error && err.name === "AbortError") {
@@ -239,17 +249,17 @@ export default function CategoryStoresSection({
   }, [stores.length, nextSlide]);
 
   // Reset carousel when the category changes.
-  useEffect(() => {
-    currentIndex.current = 0;
-    setActiveIndex(0);
+  // useEffect(() => {
+  //   currentIndex.current = 0;
+  //   setActiveIndex(0);
 
-    if (carouselRef.current) {
-      carouselRef.current.scrollTo({
-        left: 0,
-        behavior: "instant",
-      });
-    }
-  }, [categorySlug, stores.length]);
+  //   if (carouselRef.current) {
+  //     carouselRef.current.scrollTo({
+  //       left: 0,
+  //       behavior: "instant",
+  //     });
+  //   }
+  // }, [categorySlug, stores.length]);
 
   const viewAllHref = `/stores?category=${encodeURIComponent(categorySlug)}`;
 

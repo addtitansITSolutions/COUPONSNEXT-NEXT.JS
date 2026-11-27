@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   ArrowLeft,
   Check,
@@ -77,35 +77,41 @@ function createSlug(value: string) {
     .replace(/-+/g, "-");
 }
 
-export default function CategoryForm({ mode, category, onCancel, onCreated, onUpdated }: CategoryFormProps) {
+
+
+function createFormFromCategory(category?: Category | null): FormState {
+  return {
+    name: category?.name || "",
+    slug: category?.slug || "",
+    description: category?.description || "",
+    contentTypes: category?.contentTypes || ["store", "coupon", "blog"],
+    isActive: category?.isActive ?? true,
+    isFeatured: category?.isFeatured ?? false,
+    sortOrder: category?.sortOrder ?? 0,
+  };
+}
+
+function CategoryFormContent({ mode, category, onCancel, onCreated, onUpdated }: CategoryFormProps) {
   const isEditMode = mode === "edit";
-  const [form, setForm] = useState<FormState>({
-    name: "",
-    slug: "",
-    description: "",
-    contentTypes: ["store", "coupon", "blog"],
-    isActive: true,
-    isFeatured: false,
-    sortOrder: 0,
-  });
+  const [form, setForm] = useState<FormState>(() => createFormFromCategory(category));
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(false);
 
-  useEffect(() => {
-    if (isEditMode && category) {
-      setForm({ name: category.name || "",
-        slug: category.slug || "",
-        description: category.description || "",
-        contentTypes: category.contentTypes || [],
-        isActive: category.isActive,
-        isFeatured: category.isFeatured,
-        sortOrder: category.sortOrder ?? 0,
-      });
+  // useEffect(() => {
+  //   if (isEditMode && category) {
+  //     setForm({ name: category.name || "",
+  //       slug: category.slug || "",
+  //       description: category.description || "",
+  //       contentTypes: category.contentTypes || [],
+  //       isActive: category.isActive,
+  //       isFeatured: category.isFeatured,
+  //       sortOrder: category.sortOrder ?? 0,
+  //     });
 
-      setIsSlugManuallyEdited(true);
-    }
-  }, [isEditMode, category]);
+  //     setIsSlugManuallyEdited(true);
+  //   }
+  // }, [isEditMode, category]);
 
   const handleNameChange = (value: string) => {
     setForm((current) => ({
@@ -717,4 +723,14 @@ export default function CategoryForm({ mode, category, onCancel, onCreated, onUp
       </form>
     </div>
   );
+}
+
+
+
+
+export default function CategoryForm(props: CategoryFormProps) {
+  const formKey =
+    props.mode === "edit" ? props.category.id : "create";
+
+  return <CategoryFormContent key={formKey} {...props} />;
 }

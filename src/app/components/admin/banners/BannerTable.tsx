@@ -8,6 +8,8 @@ import {
   Trash2,
 } from "lucide-react";
 
+import Image from "next/image";
+
 import type { Banner } from "@/lib/hooks/useBanners";
 
 interface BannerTableProps {
@@ -107,11 +109,13 @@ export default function BannerTable({
                     <div className="flex items-center gap-2">
                       <div className="flex h-12 w-20 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
                         {banner.desktopImage ? (
-                          <img
+                          <Image
                             src={banner.desktopImage}
                             alt={`${banner.title} desktop banner`}
+                            width={320}
+                            height={192}
+                            sizes="80px"
                             className="h-full w-full object-cover"
-                            loading="lazy"
                           />
                         ) : (
                           <ImageIcon size={18} className="text-gray-400" />
@@ -120,11 +124,13 @@ export default function BannerTable({
 
                       <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
                         {banner.mobileImage ? (
-                          <img
+                          <Image
                             src={banner.mobileImage}
                             alt={`${banner.title} mobile banner`}
+                            width={192}
+                            height={192}
+                            sizes="48px"
                             className="h-full w-full object-cover"
-                            loading="lazy"
                           />
                         ) : (
                           <ImageIcon size={16} className="text-gray-400" />
@@ -142,11 +148,13 @@ export default function BannerTable({
                       <div className="flex min-w-[150px] items-center gap-2">
                         <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-gray-200 bg-gray-50">
                           {banner.store.logo ? (
-                            <img
+                            <Image
                               src={banner.store.logo}
                               alt={`${banner.store.name} logo`}
+                              width={128}
+                              height={128}
+                              sizes="32px"
                               className="h-full w-full object-contain"
-                              loading="lazy"
                             />
                           ) : (
                             <span className="text-xs font-semibold text-gray-400">

@@ -1,6 +1,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { Types } from "mongoose";
+import type { Filter } from "mongodb";
+import type { IBlog } from "@/models/Blog";
 import { z } from "zod";
 
 import { connectDB } from "@/lib/mongodb";
@@ -154,7 +156,7 @@ export async function GET(request: NextRequest) {
 
     /* ---------- base filter ---------- */
 
-    const filter: Record<string, any> = {
+    const filter: Filter<IBlog> = {
       status: "published",
       isActive: true,
       publishedAt: {

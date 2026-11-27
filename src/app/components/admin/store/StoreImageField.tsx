@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { ChangeEvent, DragEvent } from "react";
 import { ImagePlus, Loader2, Trash2, Upload } from "lucide-react";
+import Image from "next/image";
 import { toast } from "@/components/ui/toast/toast";
 interface StoreImageFieldProps {
   label: string;
@@ -187,9 +188,12 @@ export default function StoreImageField({ label, folder, value, error, disabled 
         {displayedImage ? (
           <>
             <div className="flex min-h-44 w-full items-center justify-center p-4">
-              <img
+              <Image
                 src={displayedImage}
                 alt={`${label} preview`}
+                width={576}
+                height={576}
+                sizes="(max-width: 576px) 100vw, 576px"
                 className="max-h-36 max-w-full rounded-lg object-contain"
               />
             </div>

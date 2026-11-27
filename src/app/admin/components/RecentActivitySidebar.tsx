@@ -539,12 +539,8 @@ export default function RecentActivitySidebar() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
   const fetchActivities = useCallback(async (signal?: AbortSignal) => {
     try {
-      setLoading(true);
-      setError(null);
-
       const response = await fetch(
         `/api/admin/users/activity?limit=${FETCH_LIMIT}`,
         {
@@ -576,6 +572,7 @@ export default function RecentActivitySidebar() {
       setNextIndex(VISIBLE_COUNT);
       setIncoming(null);
       setIsAnimating(false);
+      setError(null);
     } catch (err) {
       if (err instanceof Error && err.name === "AbortError") {
         return;
@@ -597,7 +594,15 @@ export default function RecentActivitySidebar() {
   useEffect(() => {
     const controller = new AbortController();
 
-    fetchActivities(controller.signal);
+    const loadActivities = async () => {
+      await Promise.resolve();
+
+      if (controller.signal.aborted) return;
+
+      fetchActivities(controller.signal);
+    };
+
+    void loadActivities();
 
     return () => controller.abort();
   }, [fetchActivities]);

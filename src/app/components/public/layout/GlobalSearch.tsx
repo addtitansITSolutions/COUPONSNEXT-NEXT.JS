@@ -158,19 +158,11 @@ export default function GlobalSearch({
     requestRef.current?.abort();
 
     if (trimmedQuery.length < 2) {
-      setResults(EMPTY_RESULTS);
-      setIsLoading(false);
-      setActiveIndex(-1);
       return;
     }
 
     const controller = new AbortController();
     requestRef.current = controller;
-
-    // Show loading immediately, including during debounce.
-    setIsLoading(true);
-    setResults(EMPTY_RESULTS);
-    setActiveIndex(-1);
 
     const timeout = setTimeout(async () => {
       try {
@@ -204,7 +196,9 @@ export default function GlobalSearch({
           return;
         }
 
-        setResults(EMPTY_RESULTS);
+        if (!controller.signal.aborted) {
+          setResults(EMPTY_RESULTS);
+        }
       } finally {
         if (!controller.signal.aborted) {
           setIsLoading(false);
@@ -434,8 +428,13 @@ export default function GlobalSearch({
           type="text"
           value={query}
           onChange={(event) => {
-            setQuery(event.target.value);
+            const value = event.target.value;
+
+            setQuery(value);
             setIsOpen(true);
+            setResults(EMPTY_RESULTS);
+            setIsLoading(value.trim().length >= 2);
+            setActiveIndex(-1);
           }}
           onFocus={() => setIsOpen(true)}
           onKeyDown={handleKeyDown}
@@ -461,6 +460,8 @@ export default function GlobalSearch({
             onClick={() => {
               setQuery("");
               setResults(EMPTY_RESULTS);
+              setIsLoading(false);
+              setActiveIndex(-1);
               setIsOpen(true);
               inputRef.current?.focus();
             }}

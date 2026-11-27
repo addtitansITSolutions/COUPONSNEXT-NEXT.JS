@@ -58,7 +58,7 @@ export async function createDatabaseSafetyBackup(): Promise<string> {
   const mongodumpPath = process.env.MONGODUMP_PATH || "mongodump";
   await new Promise<void>((resolve, reject) => {
     const dumpProcess = spawn(
-      mongodumpPath,
+      /*turbopackIgnore: true*/ mongodumpPath,
       [
         `--uri=${mongodbUri}`,
         `--archive=${archivePath}`,

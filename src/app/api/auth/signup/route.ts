@@ -6,7 +6,7 @@ import { signupSchema } from "@/lib/validations/auth";
 import { handleApiError } from "@/lib/errors/handleApiError";
 import { ApiError } from "@/lib/errors/ApiError";
 import User from "@/models/User";
-import { z } from "zod";
+// import { z } from "zod";
 import { createActivityLog } from "@/lib/activity-log";
 
 export const runtime = "nodejs";

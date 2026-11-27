@@ -240,8 +240,24 @@ export function useBlogs( options: UseBlogsOptions = {} ): UseBlogsReturn {
     }
   }, [pagination.page, buildQueryString]);
 
-  useEffect(() => {
-    void fetchBlogs();
+    useEffect(() => {
+    const controller = new AbortController();
+
+    const loadBlogs = async () => {
+      await Promise.resolve();
+
+      if (controller.signal.aborted) {
+        return;
+      }
+
+      await fetchBlogs();
+    };
+
+    void loadBlogs();
+
+    return () => {
+      controller.abort();
+    };
   }, [fetchBlogs]);
 
   // Filter setters.

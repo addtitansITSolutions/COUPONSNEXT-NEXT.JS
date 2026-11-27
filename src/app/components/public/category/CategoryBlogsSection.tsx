@@ -43,9 +43,18 @@ export default function CategoryBlogsSection({
 
   const [activeIndex, setActiveIndex] = useState(0);
 
-  const fetchCategoryBlogs = useCallback(async () => {
+  const fetchCategoryBlogs = useCallback(async (signal?: AbortSignal) => {
     setLoading(true);
     setError("");
+
+    // Reset carousel when a new category is loaded.
+    currentIndex.current = 0;
+    setActiveIndex(0);
+
+    carouselRef.current?.scrollTo({
+      left: 0,
+      behavior: "instant",
+    });
 
     try {
       const params = new URLSearchParams({
@@ -60,6 +69,7 @@ export default function CategoryBlogsSection({
         {
           method: "GET",
           cache: "no-store",
+          signal,
         }
       );
 
@@ -69,21 +79,42 @@ export default function CategoryBlogsSection({
         throw new Error("Unable to load articles. Please try again.");
       }
 
-      setBlogs(result.blogs ?? []);
+      if (!signal?.aborted) {
+        setBlogs(result.blogs ?? []);
+      }
     } catch (err) {
+      if (
+        signal?.aborted ||
+        (err instanceof Error && err.name === "AbortError")
+      ) {
+        return;
+      }
+
       setError(
         err instanceof Error
           ? err.message
           : "Something went wrong while loading articles."
       );
+
       setBlogs([]);
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) {
+        setLoading(false);
+      }
     }
   }, [categorySlug]);
 
   useEffect(() => {
-    fetchCategoryBlogs();
+    const controller = new AbortController();
+
+    const timeout = window.setTimeout(() => {
+      void fetchCategoryBlogs(controller.signal);
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeout);
+      controller.abort();
+    };
   }, [fetchCategoryBlogs]);
 
   const duplicatedBlogs = blogs.length > 1 ? [...blogs, ...blogs] : blogs;
@@ -197,22 +228,22 @@ export default function CategoryBlogsSection({
     return () => window.clearInterval(interval);
   }, [blogs.length, nextSlide]);
 
-  useEffect(() => {
-    currentIndex.current = 0;
-    setActiveIndex(0);
+  // useEffect(() => {
+  //   currentIndex.current = 0;
+  //   setActiveIndex(0);
 
-    if (carouselRef.current) {
-      carouselRef.current.scrollTo({
-        left: 0,
-        behavior: "instant",
-      });
-    }
-  }, [categorySlug, blogs.length]);
+  //   if (carouselRef.current) {
+  //     carouselRef.current.scrollTo({
+  //       left: 0,
+  //       behavior: "instant",
+  //     });
+  //   }
+  // }, [categorySlug, blogs.length]);
 
   if (!loading && blogs.length === 0 && !error) return null;
   if (loading && blogs.length === 0) return null;
 
-  const viewAllHref = `/blog?category=${encodeURIComponent(categorySlug)}`;
+  const viewAllHref = `/blogs?category=${encodeURIComponent(categorySlug)}`;
 
   return (
     <section className="relative overflow-hidden border-t border-[var(--border)] bg-white py-10 sm:py-14 lg:py-16">
@@ -282,7 +313,7 @@ export default function CategoryBlogsSection({
 
             <button
               type="button"
-              onClick={fetchCategoryBlogs}
+              onClick={() => void fetchCategoryBlogs()}
               className="mt-3 text-sm font-bold text-[var(--brand-purple)] hover:underline"
             >
               Try again

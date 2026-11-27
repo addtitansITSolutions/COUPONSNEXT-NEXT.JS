@@ -222,7 +222,23 @@ export function useCoupons( options: UseCouponsOptions = {} ): UseCouponsReturn 
   }, [pagination.page, buildQueryString]);
 
   useEffect(() => {
-    void fetchCoupons();
+    const controller = new AbortController();
+
+    const loadCoupons = async () => {
+      await Promise.resolve();
+
+      if (controller.signal.aborted) {
+        return;
+      }
+
+      await fetchCoupons();
+    };
+
+    void loadCoupons();
+
+    return () => {
+      controller.abort();
+    };
   }, [fetchCoupons]);
 
   // Filter setters
@@ -310,40 +326,8 @@ export function useCoupons( options: UseCouponsOptions = {} ): UseCouponsReturn 
     [fetchCoupons]
   );
 
-  // Update coupon
-  // const updateCoupon = useCallback( async ( id: string, updateData: Record<string, unknown> ): Promise<Coupon> => {
-  //     const response = await fetch(`/api/admin/coupons/${id}`, {
-  //       method: "PATCH",
-  //       credentials: "include",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify(updateData),
-  //     });
-
-  //     const data = await response.json();
-
-  //     if (!response.ok || !data.success) {
-  //       throw new Error(
-  //         getApiErrorMessageOnUi(data, "Failed to update coupon.")
-  //       );
-  //     }
-
-  //     await fetchCoupons();
-
-  //     return data.coupon as Coupon;
-  //   },
-  //   [fetchCoupons]
-  // );
-
-
- 
-  
-
 
   // Update coupon
-  
-  
   
   const updateCoupon = useCallback(
     async (

@@ -43,12 +43,21 @@ export default function BlogFilters({
 }: BlogFiltersProps) {
   const id = useId();
 
-  const [tagInput, setTagInput] = useState(filters.tag);
+  // const [tagInput, setTagInput] = useState(filters.tag);
 
-  // Sync local tag input with external filter changes
-  useEffect(() => {
+  // // Sync local tag input with external filter changes
+  // useEffect(() => {
+  //   setTagInput(filters.tag);
+  // }, [filters.tag]);
+
+  const [tagInput, setTagInput] = useState(filters.tag);
+  const [previousFilterTag, setPreviousFilterTag] = useState(filters.tag);
+
+  // Synchronize tag input when the URL filter changes.
+  if (filters.tag !== previousFilterTag) {
+    setPreviousFilterTag(filters.tag);
     setTagInput(filters.tag);
-  }, [filters.tag]);
+  }
 
   // Debounce tag filtering
   useEffect(() => {

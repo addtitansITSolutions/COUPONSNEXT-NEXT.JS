@@ -215,8 +215,24 @@ export function useStores( options: UseStoresOptions = {} ): UseStoresReturn {
     }
   }, [buildQueryString, pagination.page]);
 
-  useEffect(() => {
-    fetchStores();
+    useEffect(() => {
+    const controller = new AbortController();
+
+    const loadStores = async () => {
+      await Promise.resolve();
+
+      if (controller.signal.aborted) {
+        return;
+      }
+
+      await fetchStores();
+    };
+
+    void loadStores();
+
+    return () => {
+      controller.abort();
+    };
   }, [fetchStores]);
 
   /*

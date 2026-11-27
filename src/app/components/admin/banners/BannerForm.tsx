@@ -55,7 +55,7 @@ function isLocalUpload(url: string): boolean {
   return url.startsWith("/uploads/") && !url.startsWith("//");
 }
 
-export default function BannerForm({
+function BannerFormContent({
   banner,
   onSubmit,
   onCancel,
@@ -76,7 +76,7 @@ export default function BannerForm({
   const saveInProgressRef = useRef(false);
 
   const bannerId = banner?.id ?? "";
-  const bannerIdRef = useRef(bannerId);
+  // const bannerIdRef = useRef(bannerId);
   const isEditing = Boolean(bannerId);
 
   const isUploading = isDesktopUploading || isMobileUploading;
@@ -115,22 +115,22 @@ export default function BannerForm({
     return failedUrls;
   }
 
-  useEffect(() => {
-    if (bannerIdRef.current !== bannerId) {
-      const previousUploads = [...uploadedImageUrlsRef.current];
-      uploadedImageUrlsRef.current.clear();
+  // useEffect(() => {
+  //   if (bannerIdRef.current !== bannerId) {
+  //     const previousUploads = [...uploadedImageUrlsRef.current];
+  //     uploadedImageUrlsRef.current.clear();
 
-      if (previousUploads.length) {
-        void cleanupImageUrls(previousUploads);
-      }
-    }
+  //     if (previousUploads.length) {
+  //       void cleanupImageUrls(previousUploads);
+  //     }
+  //   }
 
-    bannerIdRef.current = bannerId;
-    setForm(getInitialValues(banner));
-    setErrors({});
-    setIsDesktopUploading(false);
-    setIsMobileUploading(false);
-  }, [banner, bannerId]);
+  //   bannerIdRef.current = bannerId;
+  //   setForm(getInitialValues(banner));
+  //   setErrors({});
+  //   setIsDesktopUploading(false);
+  //   setIsMobileUploading(false);
+  // }, [banner, bannerId]);
 
   // Remove temporary uploads when leaving the form, except while saving.
   useEffect(() => {
@@ -607,4 +607,12 @@ export default function BannerForm({
       </div>
     </form>
   );
+}
+
+
+
+export default function BannerForm(props: BannerFormProps) {
+  const formKey = props.banner?.id ?? "new";
+
+  return <BannerFormContent key={formKey} {...props} />;
 }

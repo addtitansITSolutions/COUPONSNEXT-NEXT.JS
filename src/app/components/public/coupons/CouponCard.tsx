@@ -17,7 +17,9 @@
 // import { motion, useReducedMotion } from "framer-motion";
 // import countries from "i18n-iso-countries";
 // import enLocale from "i18n-iso-countries/langs/en.json";
+
 // countries.registerLocale(enLocale);
+
 // export interface CouponItem {
 //   id: string;
 //   title: string;
@@ -55,12 +57,10 @@
 //   const prefersReducedMotion = useReducedMotion();
 
 //   const isValidCountry = (country?: string) => {
-//   if (!country) return false;
+//     if (!country) return false;
 
-//   return Boolean(
-//     countries.alpha2ToAlpha3(country.toUpperCase())
-//   );
-// };
+//     return Boolean(countries.alpha2ToAlpha3(country.toUpperCase()));
+//   };
 
 //   // Sale countdown
 //   useEffect(() => {
@@ -146,6 +146,15 @@
 //       transition={{ duration: 0.2 }}
 //       className="group relative flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-white shadow-sm transition-shadow hover:shadow-lg"
 //     >
+//       {/* Full Card Navigation Link */}
+//       <Link
+//         href={`/coupons/${coupon.slug}`}
+//         aria-label={`View ${coupon.title}`}
+//         className="absolute inset-0 z-10 rounded-2xl"
+//       >
+//         <span className="sr-only">View coupon details</span>
+//       </Link>
+
 //       {/* Coupon Image */}
 //       <div className="relative flex h-40 items-center justify-center overflow-hidden bg-slate-50 p-5">
 //         <div
@@ -169,12 +178,10 @@
 //         )}
 
 //         <div className="absolute left-0 top-0 flex items-stretch">
-//           {/* Text block */}
-//           <span className="bg-[var(--brand-purple)] px-2 pl-4 py-1.5 text-[8px] font-extrabold uppercase tracking-wide text-white">
+//           <span className="bg-[var(--brand-purple)] px-2 py-1.5 pl-4 text-[8px] font-extrabold uppercase tracking-wide text-white">
 //             {coupon.type === "code" ? "Coupon" : "Deal"}
 //           </span>
 
-//           {/* Right S-curve */}
 //           <svg
 //             className="w-4 shrink-0 self-stretch"
 //             viewBox="0 0 100 100"
@@ -188,7 +195,7 @@
 //           </svg>
 //         </div>
 
-//         {/* Premium Verified Badge */}
+//         {/* Verified Badge */}
 //         {coupon.isVerified && (
 //           <div className="absolute right-0 top-0 z-20 h-[100px] w-[100px] overflow-hidden">
 //             <div
@@ -207,20 +214,22 @@
 //             </div>
 //           </div>
 //         )}
+
 //         {/* Discount */}
 //         {coupon.discount && (
 //           <div className="absolute bottom-0 right-0 flex max-w-full items-stretch">
-//             {/* Left S-curve */}
 //             <svg
 //               className="w-4 shrink-0 self-stretch"
 //               viewBox="0 0 100 100"
 //               preserveAspectRatio="none"
 //               aria-hidden="true"
 //             >
-//               <path d="M0 100 C 50 100, 5 0, 100 0 V 100 Z" fill="var(--brand-yellow)" />
+//               <path
+//                 d="M0 100 C 50 100, 5 0, 100 0 V 100 Z"
+//                 fill="var(--brand-yellow)"
+//               />
 //             </svg>
 
-//             {/* Text block */}
 //             <span className="-ml-px min-w-0 truncate bg-[var(--brand-yellow)] py-1.5 pl-1 pr-3 text-[8px] font-black text-[var(--brand-navy)]">
 //               {coupon.discount}
 //             </span>
@@ -230,16 +239,20 @@
 
 //       {/* Coupon Highlights & Sale Countdown */}
 //       {(remainingTime !== null || coupon.isFeatured || coupon.country) && (
-//         <div className={`flex w-full border-b border-red-100 bg-white px-2 py-2 ${
+//         <div
+//           className={`flex w-full border-b border-red-100 bg-white px-2 py-2 ${
 //             coupon.isFeatured
 //               ? "flex-col sm:flex-row sm:items-center sm:justify-between"
 //               : "flex-row items-center justify-between"
 //           }`}
 //         >
-
 //           {/* Countdown */}
 //           {remainingTime !== null && (
-//             <div className={`flex shrink-0 flex-col items-center justify-center sm:order-2 ${ !coupon.isFeatured && !hasValidCountry ? "mx-auto mx-0" : "" }`}>
+//             <div
+//               className={`flex shrink-0 flex-col items-center justify-center sm:order-2 ${
+//                 !coupon.isFeatured && !hasValidCountry ? "mx-auto" : ""
+//               }`}
+//             >
 //               <span className="mb-1 text-[8px] font-extrabold uppercase tracking-widest text-green-600">
 //                 {remainingTime === 0 ? "SALE IS LIVE" : "SALE ONGOING"}
 //               </span>
@@ -278,7 +291,7 @@
 //           <div
 //             className={`flex min-w-0 items-center justify-between ${
 //               coupon.isFeatured
-//                 ? "mt-2 w-full sm:mt-0 sm:w-auto sm:justify-start sm:gap-2 sm:order-1"
+//                 ? "mt-2 w-full sm:order-1 sm:mt-0 sm:w-auto sm:justify-start sm:gap-2"
 //                 : "w-auto gap-2"
 //             }`}
 //           >
@@ -289,21 +302,23 @@
 //               </span>
 //             )}
 
-//             {/* Show flag here only when Featured is available */}
-//             {remainingTime !== null && coupon.country && hasValidCountry && (
-//               <span
-//                 title={coupon.country.toUpperCase()}
-//                 className={`fi fi-${coupon.country.toLowerCase()}`}
-//               />
-//             )}
+//             {remainingTime !== null &&
+//               coupon.country &&
+//               hasValidCountry && (
+//                 <span
+//                   title={coupon.country.toUpperCase()}
+//                   className={`fi fi-${coupon.country.toLowerCase()}`}
+//                 />
+//               )}
 
-//             {/* Show flag on right when timer is unavailable */}
-//             {remainingTime === null && coupon.country && hasValidCountry && (
-//               <span
-//                 title={coupon.country.toUpperCase()}
-//                 className={`fi fi-${coupon.country.toLowerCase()}`}
-//               />
-//             )}
+//             {remainingTime === null &&
+//               coupon.country &&
+//               hasValidCountry && (
+//                 <span
+//                   title={coupon.country.toUpperCase()}
+//                   className={`fi fi-${coupon.country.toLowerCase()}`}
+//                 />
+//               )}
 //           </div>
 //         </div>
 //       )}
@@ -311,7 +326,7 @@
 //       {/* Coupon Details */}
 //       <div className="flex flex-1 flex-col p-4">
 //         {/* Store & Category */}
-//         <div className="mb-2 flex flex-wrap items-center gap-2">
+//         <div className="relative z-20 mb-2 flex flex-wrap items-center gap-2">
 //           <Link
 //             href={`/stores/${coupon.store.slug}`}
 //             className="line-clamp-1 inline-flex w-fit items-center gap-1.5 text-xs font-bold text-[var(--muted)] transition-colors hover:text-[var(--brand-purple)]"
@@ -368,7 +383,7 @@
 //           <button
 //             type="button"
 //             onClick={() => void handleCouponClick()}
-//             className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[var(--brand-purple)] px-2 py-3 text-xs font-bold text-white transition-colors hover:bg-[var(--accent-hover)] active:scale-[0.98]"
+//             className="relative z-20 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[var(--brand-purple)] px-2 py-3 text-xs font-bold text-white transition-colors hover:bg-[var(--accent-hover)] active:scale-[0.98]"
 //           >
 //             {coupon.type === "code" ? (
 //               isCopied ? (
@@ -398,6 +413,27 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -414,6 +450,7 @@ import {
   Tag,
   ShoppingBag,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
 import countries from "i18n-iso-countries";
 import enLocale from "i18n-iso-countries/langs/en.json";
@@ -451,8 +488,20 @@ interface CouponCardProps {
 }
 
 export default function CouponCard({ coupon }: CouponCardProps) {
+  const router = useRouter();
   const [isCopied, setIsCopied] = useState(false);
-  const [remainingTime, setRemainingTime] = useState<number | null>(null);
+  const countdownKey = `${coupon.startsAt ?? ""}|${coupon.expiresAt ?? ""}`;
+
+  const [countdown, setCountdown] = useState<{
+    key: string;
+    remainingTime: number | null;
+  }>({
+    key: countdownKey,
+    remainingTime: null,
+  });
+
+  const remainingTime =
+    countdown.key === countdownKey ? countdown.remainingTime : null;
 
   const prefersReducedMotion = useReducedMotion();
 
@@ -462,49 +511,56 @@ export default function CouponCard({ coupon }: CouponCardProps) {
     return Boolean(countries.alpha2ToAlpha3(country.toUpperCase()));
   };
 
-  // Sale countdown
-  useEffect(() => {
-    setRemainingTime(null);
-
-    if (!coupon.startsAt || !coupon.expiresAt) {
-      return;
-    }
-
-    const startTime = new Date(coupon.startsAt).getTime();
-    const endTime = new Date(coupon.expiresAt).getTime();
-
-    if (
-      !Number.isFinite(startTime) ||
-      !Number.isFinite(endTime) ||
-      startTime >= endTime
-    ) {
-      return;
-    }
-
-    const updateTimer = () => {
-      const now = Date.now();
-
-      // Sale has not started yet.
-      if (now < startTime) {
-        setRemainingTime(null);
+    // Sale countdown
+    useEffect(() => {
+      if (!coupon.startsAt || !coupon.expiresAt) {
         return;
       }
 
-      // Sale has ended.
-      if (now >= endTime) {
-        setRemainingTime(0);
+      const startTime = new Date(coupon.startsAt).getTime();
+      const endTime = new Date(coupon.expiresAt).getTime();
+
+      if (
+        !Number.isFinite(startTime) ||
+        !Number.isFinite(endTime) ||
+        startTime >= endTime
+      ) {
         return;
       }
 
-      setRemainingTime(endTime - now);
-    };
+      const updateTimer = () => {
+        const now = Date.now();
 
-    updateTimer();
+        // Sale has not started yet.
+        if (now < startTime) {
+          setCountdown({
+            key: countdownKey,
+            remainingTime: null,
+          });
+          return;
+        }
 
-    const interval = setInterval(updateTimer, 1000);
+        // Sale has ended.
+        if (now >= endTime) {
+          setCountdown({
+            key: countdownKey,
+            remainingTime: 0,
+          });
+          return;
+        }
 
-    return () => clearInterval(interval);
-  }, [coupon.startsAt, coupon.expiresAt]);
+        setCountdown({
+          key: countdownKey,
+          remainingTime: endTime - now,
+        });
+      };
+
+      updateTimer();
+
+      const interval = window.setInterval(updateTimer, 1000);
+
+      return () => window.clearInterval(interval);
+    }, [coupon.startsAt, coupon.expiresAt, countdownKey]);
 
   const formatRemainingTime = (milliseconds: number) => {
     const totalSeconds = Math.floor(milliseconds / 1000);
@@ -534,7 +590,7 @@ export default function CouponCard({ coupon }: CouponCardProps) {
       }
     }
 
-    window.location.href = `/stores/${coupon.store.slug}`;
+    router.push(`/stores/${coupon.store.slug}`);
   };
 
   const imageSrc = coupon.image || coupon.store.logo;

@@ -199,9 +199,9 @@ export default function StoreFilters({ filters, onSearchChange, onCategoryChange
   const [localCountry, setLocalCountry] = useState(filters.country || "");
 
   // Keep internal country state in sync if parent resets or clears
-  useEffect(() => {
-    setLocalCountry(filters.country || "");
-  }, [filters.country]);
+  // useEffect(() => {
+  //   setLocalCountry(filters.country || "");
+  // }, [filters.country]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -338,7 +338,10 @@ export default function StoreFilters({ filters, onSearchChange, onCategoryChange
         {hasActiveFilters && (
           <button
             type="button"
-            onClick={onClear}
+            onClick={() => {
+              setLocalCountry("");
+              onClear();
+            }}
             className="inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-600 transition hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900"
           >
             <X size={16} />
