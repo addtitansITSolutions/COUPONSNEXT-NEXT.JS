@@ -188,8 +188,24 @@ export function useBanners( options: UseBannersOptions = {}): UseBannersReturn {
     }
   }, [buildQueryString, pagination.page]);
 
-  useEffect(() => {
-    void fetchBanners();
+    useEffect(() => {
+    const controller = new AbortController();
+
+    const loadBanners = async () => {
+      await Promise.resolve();
+
+      if (controller.signal.aborted) {
+        return;
+      }
+
+      await fetchBanners();
+    };
+
+    void loadBanners();
+
+    return () => {
+      controller.abort();
+    };
   }, [fetchBanners]);
 
   /*

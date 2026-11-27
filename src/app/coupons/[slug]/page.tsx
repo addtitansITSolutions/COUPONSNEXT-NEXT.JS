@@ -53,7 +53,7 @@ interface PopulatedCoupon {
 }
 
 // Convert MongoDB document into the existing CouponItem shape.
-function serializeCoupon(coupon: any): CouponItem {
+function serializeCoupon(coupon: PopulatedCoupon): CouponItem {
   return {
     id: coupon._id.toString(),
     title: coupon.title,

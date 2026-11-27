@@ -7,6 +7,8 @@ import {
   Star,
 } from "lucide-react";
 
+import Image from "next/image";
+
 export type Category = {
   id: string;
   name: string;
@@ -81,9 +83,12 @@ export default function CategoryTable({ categories, onEdit, onDelete, }: Categor
                   {/* Image */}
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--accent-light)]">
                     {category.image ? (
-                      <img
+                      <Image
                         src={category.image}
                         alt={category.name}
+                        width={176}
+                        height={176}
+                        sizes="44px"
                         className="h-full w-full object-cover"
                       />
                     ) : (

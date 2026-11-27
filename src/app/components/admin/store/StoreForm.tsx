@@ -138,7 +138,7 @@ async function cleanupImageUrls(urls: string[]): Promise<string[]> {
   );
 }
 
-export default function StoreForm({ store, onSubmit, onCancel, submitting = false }: StoreFormProps) {
+function StoreFormContent({ store, onSubmit, onCancel, submitting = false }: StoreFormProps) {
   const [form, setForm] = useState<FormState>(() => createFormFromStore(store) );
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
@@ -161,32 +161,32 @@ export default function StoreForm({ store, onSubmit, onCancel, submitting = fals
   const isEditMode = !!store;
 
   // Reset form state when switching to a different store.
-  useEffect(() => {
-    const temporaryUrls = [...uploadedImageUrlsRef.current];
+  // useEffect(() => {
+  //   const temporaryUrls = [...uploadedImageUrlsRef.current];
 
-    uploadedImageUrlsRef.current.clear();
-    pendingDeleteImageUrlsRef.current.clear();
-    originalImageUrlsRef.current = new Set(getLocalImageUrls(store));
+  //   uploadedImageUrlsRef.current.clear();
+  //   pendingDeleteImageUrlsRef.current.clear();
+  //   originalImageUrlsRef.current = new Set(getLocalImageUrls(store));
 
-    if (temporaryUrls.length) {
-      void cleanupImageUrls(temporaryUrls).then((failedUrls) => {
-        if (failedUrls.length) {
-          console.error(
-            "Some temporary images could not be deleted:",
-            failedUrls
-          );
-        }
-      });
-    }
+  //   if (temporaryUrls.length) {
+  //     void cleanupImageUrls(temporaryUrls).then((failedUrls) => {
+  //       if (failedUrls.length) {
+  //         console.error(
+  //           "Some temporary images could not be deleted:",
+  //           failedUrls
+  //         );
+  //       }
+  //     });
+  //   }
 
-    setForm(createFormFromStore(store));
-    setSlugTouched(!!store);
-    setErrors({});
-    setServerError(null);
-    setImageUploads({ logo: false, banner: false });
-    setSaving(false);
-    setCleaningImages(false);
-  }, [store]);
+  //   setForm(createFormFromStore(store));
+  //   setSlugTouched(!!store);
+  //   setErrors({});
+  //   setServerError(null);
+  //   setImageUploads({ logo: false, banner: false });
+  //   setSaving(false);
+  //   setCleaningImages(false);
+  // }, [store]);
 
   // Load active store categories.
   useEffect(() => {
@@ -902,6 +902,14 @@ export default function StoreForm({ store, onSubmit, onCancel, submitting = fals
       </div>
     </form>
   );
+}
+
+
+
+export default function StoreForm(props: StoreFormProps) {
+  const formKey = props.store?.id ?? "new";
+
+  return <StoreFormContent key={formKey} {...props} />;
 }
 
 

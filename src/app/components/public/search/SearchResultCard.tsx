@@ -1,4 +1,3 @@
-
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -90,29 +89,20 @@ function getTitle(item: SearchItem): string {
   return item.title;
 }
 
-function getType(item: SearchItem): string {
-  if (item.type === "store") return "Store";
-  if (item.type === "blog") return "Article";
-  if (item.type === "category") return "Category";
+// function getType(item: SearchItem): string {
+//   if (item.type === "store") return "Store";
+//   if (item.type === "blog") return "Article";
+//   if (item.type === "category") return "Category";
 
-  return "Coupon";
-}
-
-function getIcon(item: SearchItem) {
-  if (item.type === "store") return Store;
-  if (item.type === "blog") return BookOpen;
-  if (item.type === "category") return Tags;
-
-  return TicketPercent;
-}
+//   return "Coupon";
+// }
 
 export default function SearchResultCard({
   item,
 }: SearchResultCardProps) {
   const image = getImage(item);
   const title = getTitle(item);
-  const type = getType(item);
-  const Icon = getIcon(item);
+  // const type = getType(item);
 
   return (
     <Link
@@ -129,11 +119,14 @@ export default function SearchResultCard({
             sizes="76px"
             className="object-contain p-2 transition-transform duration-300 group-hover:scale-105"
           />
+        ) : item.type === "store" ? (
+          <Store size={27} className="text-[var(--brand-purple)]" />
+        ) : item.type === "blog" ? (
+          <BookOpen size={27} className="text-[var(--brand-purple)]" />
+        ) : item.type === "category" ? (
+          <Tags size={27} className="text-[var(--brand-purple)]" />
         ) : (
-          <Icon
-            size={27}
-            className="text-[var(--brand-purple)]"
-          />
+          <TicketPercent size={27} className="text-[var(--brand-purple)]" />
         )}
       </div>
 
@@ -141,8 +134,15 @@ export default function SearchResultCard({
       <div className="min-w-0 flex-1">
         <div className="mb-1.5 flex flex-wrap items-center gap-2">
           <span className="inline-flex items-center gap-1 rounded-full bg-[var(--accent-light)] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[var(--brand-purple)]">
-            <Icon size={11} />
-            {type}
+            {item.type === "store" ? (
+              <Store size={11} />
+            ) : item.type === "blog" ? (
+              <BookOpen size={11} />
+            ) : item.type === "category" ? (
+              <Tags size={11} />
+            ) : (
+              <TicketPercent size={11} />
+            )}
           </span>
 
           {item.type === "code" && (

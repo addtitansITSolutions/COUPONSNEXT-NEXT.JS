@@ -53,7 +53,7 @@ function runMongoRestore( mongodbUri: string, archivePath: string, databaseName:
     if (dryRun) {
       args.push("--dryRun", "--verbose");
     }
-    const restoreProcess = spawn(mongorestorePath, args, {
+    const restoreProcess = spawn(/*turbopackIgnore: true*/ mongorestorePath, args, {
       stdio: ["ignore", "ignore", "pipe"],
       windowsHide: true,
       shell: false,

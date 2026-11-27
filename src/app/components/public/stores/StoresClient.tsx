@@ -85,28 +85,20 @@ export default function StoresClient() {
   const [pagination, setPagination] =
     useState<StorePaginationData>(INITIAL_PAGINATION);
 
-  const [search, setSearch] = useState(
+  const [searchDraft, setSearchDraft] = useState(
     searchParams.get("search") ?? ""
   );
 
-  const [letter, setLetter] = useState(
-    searchParams.get("letter") ?? ""
-  );
+  const search = searchParams.get("search") ?? "";
+  const letter = searchParams.get("letter") ?? "";
+  const category = searchParams.get("category") ?? "";
 
-  const [category, setCategory] = useState(
-    searchParams.get("category") ?? ""
-  );
-
-  const [sort, setSort] = useState(
+  const sort =
     searchParams.get("sort") === "alphabetical"
       ? "alphabetical"
-      : "manual"
-  );
+      : "manual";
 
-  // Featured filter: "" = all, "true" = featured, "false" = not featured.
-  const [featured, setFeatured] = useState(
-    searchParams.get("featured") ?? ""
-  );
+  const featured = searchParams.get("featured") ?? "";
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -166,24 +158,20 @@ export default function StoresClient() {
     }
   }, []);
 
-  // Synchronize filters with URL and fetch stores.
-  // Supports browser Back and Forward navigation.
+  // Fetch stores whenever URL query parameters change.
   useEffect(() => {
-    const params = new URLSearchParams(queryString);
+    let cancelled = false;
 
-    setSearch(params.get("search") ?? "");
-    setLetter(params.get("letter") ?? "");
-    setCategory(params.get("category") ?? "");
+    const timeout = window.setTimeout(() => {
+      if (!cancelled) {
+        void fetchStores(queryString);
+      }
+    }, 0);
 
-    setSort(
-      params.get("sort") === "alphabetical"
-        ? "alphabetical"
-        : "manual"
-    );
-
-    setFeatured(params.get("featured") ?? "");
-
-    fetchStores(queryString);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeout);
+    };
   }, [queryString, fetchStores]);
 
   // Update URL while preserving other active filters.
@@ -215,23 +203,20 @@ export default function StoresClient() {
 
   // Debounced search.
   useEffect(() => {
-    const currentSearch =
-      new URLSearchParams(queryString).get("search") ?? "";
-
-    if (search.trim() === currentSearch) return;
+    if (searchDraft.trim() === search) return;
 
     const timeout = window.setTimeout(() => {
       updateFilters({
-        search: search.trim(),
+        search: searchDraft.trim(),
       });
     }, 400);
 
     return () => window.clearTimeout(timeout);
-  }, [search, queryString, updateFilters]);
+  }, [searchDraft, search, updateFilters]);
 
   // Filter handlers.
   const handleSearchChange = (value: string) => {
-    setSearch(value);
+    setSearchDraft(value);
   };
 
   const handleLetterChange = (value: string) => {
@@ -280,7 +265,7 @@ export default function StoresClient() {
 
   // Clear all filters.
   const handleClearFilters = () => {
-    setSearch("");
+    setSearchDraft("");
     router.push(pathname, { scroll: false });
   };
 
@@ -336,7 +321,7 @@ export default function StoresClient() {
             <aside className="hidden lg:block">
               <div className="sticky top-[136px] max-h-[calc(100vh-152px)] overflow-y-auto pr-1 [scrollbar-width:thin] min-h-[890px]">
                 <StoreFilters
-                  search={search}
+                  search={searchDraft}
                   onSearchChange={handleSearchChange}
                   selectedLetter={letter}
                   onLetterChange={handleLetterChange}
@@ -498,7 +483,7 @@ export default function StoresClient() {
             {/* Filter Content */}
             <div className="min-h-0 flex-1 overflow-y-auto p-4">
               <StoreFilters
-                search={search}
+                search={searchDraft}
                 onSearchChange={handleSearchChange}
                 selectedLetter={letter}
                 onLetterChange={handleLetterChange}

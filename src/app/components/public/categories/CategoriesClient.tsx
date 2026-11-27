@@ -69,10 +69,18 @@ export default function CategoriesClient() {
   const loadMoreControllerRef = useRef<AbortController | null>(null);
   const loadMoreSentinelRef = useRef<HTMLDivElement | null>(null);
 
-  // Keep search input synchronized with browser navigation.
-  useEffect(() => {
+
+  const [previousFilterSearch, setPreviousFilterSearch] = useState( filters.search );
+
+  if (filters.search !== previousFilterSearch) {
+    setPreviousFilterSearch(filters.search);
     setSearchInput(filters.search);
-  }, [filters.search]);
+  }
+
+  // Keep search input synchronized with browser navigation.
+  // useEffect(() => {
+  //   setSearchInput(filters.search);
+  // }, [filters.search]);
 
   // Prevent background scrolling while the mobile drawer is open.
   useEffect(() => {
@@ -124,48 +132,124 @@ export default function CategoriesClient() {
   }, [searchInput, filters.search, updateUrlParameter]);
 
   // Fetch categories whenever URL filters change.
+  // useEffect(() => {
+  //   const controller = new AbortController();
+  //   loadMoreControllerRef.current?.abort();
+  //   loadMoreControllerRef.current = null;
+  //   setLoading(true);
+  //   setLoadingMore(false);
+  //   setError("");
+  //   setCategories([]);
+  //   setPagination(null);
+  //   const fetchCategories = async () => {
+  //     try {
+  //       const params = new URLSearchParams(queryString);
+  //       params.set("page", "1");
+  //       params.set("limit", String(LIMIT));
+  //       const response = await fetch(
+  //         `/api/public/categories?${params.toString()}`,
+  //         {
+  //           method: "GET",
+  //           cache: "no-store",
+  //           signal: controller.signal,
+  //         }
+  //       );
+  //       const data: CategoriesApiResponse = await response.json();
+  //       if (!response.ok || !data.success) {
+  //         throw new Error("Unable to load categories.");
+  //       }
+  //       setCategories(data.categories);
+  //       setPagination(data.pagination);
+  //       setAvailableLetters(data.availableLetters ?? []);
+  //     } catch (err) {
+  //       if (err instanceof Error && err.name === "AbortError") return;
+  //       setError( err instanceof Error ? err.message : "Something went wrong while loading categories." );
+  //     } finally {
+  //       if (!controller.signal.aborted) {
+  //         setLoading(false);
+  //       }
+  //     }
+  //   };
+
+  //   fetchCategories();
+
+  //   return () => {
+  //     controller.abort();
+  //   };
+  // }, [queryString, retryKey]);
+
+
+
+
+
+
+  // Fetch categories whenever URL filters change.
   useEffect(() => {
     const controller = new AbortController();
+
     loadMoreControllerRef.current?.abort();
     loadMoreControllerRef.current = null;
-    setLoading(true);
-    setLoadingMore(false);
-    setError("");
-    setCategories([]);
-    setPagination(null);
-    const fetchCategories = async () => {
-      try {
-        const params = new URLSearchParams(queryString);
-        params.set("page", "1");
-        params.set("limit", String(LIMIT));
-        const response = await fetch(
-          `/api/public/categories?${params.toString()}`,
-          {
-            method: "GET",
-            cache: "no-store",
-            signal: controller.signal,
-          }
-        );
-        const data: CategoriesApiResponse = await response.json();
-        if (!response.ok || !data.success) {
-          throw new Error("Unable to load categories.");
-        }
-        setCategories(data.categories);
-        setPagination(data.pagination);
-        setAvailableLetters(data.availableLetters ?? []);
-      } catch (err) {
-        if (err instanceof Error && err.name === "AbortError") return;
-        setError( err instanceof Error ? err.message : "Something went wrong while loading categories." );
-      } finally {
-        if (!controller.signal.aborted) {
-          setLoading(false);
-        }
-      }
-    };
 
-    fetchCategories();
+    const timeout = window.setTimeout(() => {
+      if (controller.signal.aborted) return;
+
+      setLoading(true);
+      setLoadingMore(false);
+      setError("");
+      setCategories([]);
+      setPagination(null);
+
+      const fetchCategories = async () => {
+        try {
+          const params = new URLSearchParams(queryString);
+          params.set("page", "1");
+          params.set("limit", String(LIMIT));
+
+          const response = await fetch(
+            `/api/public/categories?${params.toString()}`,
+            {
+              method: "GET",
+              cache: "no-store",
+              signal: controller.signal,
+            }
+          );
+
+          const data: CategoriesApiResponse = await response.json();
+
+          if (!response.ok || !data.success) {
+            throw new Error("Unable to load categories.");
+          }
+
+          if (controller.signal.aborted) return;
+
+          setCategories(data.categories);
+          setPagination(data.pagination);
+          setAvailableLetters(data.availableLetters ?? []);
+        } catch (err) {
+          if (
+            controller.signal.aborted ||
+            (err instanceof Error && err.name === "AbortError")
+          ) {
+            return;
+          }
+
+          setError(
+            err instanceof Error
+              ? err.message
+              : "Something went wrong while loading categories."
+          );
+        } finally {
+          if (!controller.signal.aborted) {
+            setLoading(false);
+          }
+        }
+      };
+
+      void fetchCategories();
+    }, 0);
 
     return () => {
+      window.clearTimeout(timeout);
       controller.abort();
     };
   }, [queryString, retryKey]);

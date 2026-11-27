@@ -26,7 +26,52 @@ function validateBlogId(id: string) {
   }
 }
 
-function blogResponse(blog: any) {
+
+
+interface PopulatedBlog {
+  _id: {
+    toString(): string;
+  };
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: unknown;
+  featuredImage?: string;
+  featuredImageAlt?: string;
+  author: {
+    _id: {
+      toString(): string;
+    };
+    name: string;
+    email: string;
+  } | null;
+  category: {
+    _id: {
+      toString(): string;
+    };
+    name: string;
+    slug: string;
+  } | null;
+  tags?: string[];
+  status: string;
+  isActive: boolean;
+  isFeatured: boolean;
+  sortOrder: number;
+  viewCount?: number;
+  publishedAt?: Date;
+  scheduledAt?: Date;
+  seoTitle?: string;
+  seoDescription?: string;
+  canonicalUrl?: string;
+  noIndex?: boolean;
+  ogTitle?: string;
+  ogDescription?: string;
+  ogImage?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+function blogResponse(blog: PopulatedBlog) {
   const author = blog.author;
   const category = blog.category;
 
@@ -72,10 +117,11 @@ function blogResponse(blog: any) {
   };
 }
 
-async function populateBlog(id: string) {
+async function populateBlog(id: string): Promise<PopulatedBlog | null> {
   return Blog.findById(id)
     .populate("author", "name email")
-    .populate("category", "name slug");
+    .populate("category", "name slug")
+    .lean<PopulatedBlog>();
 }
 
 // GET /api/admin/blogs/[id]

@@ -4,7 +4,7 @@ import type { ChangeEvent, SubmitEvent } from "react";
 import { Loader2, Save, X } from "lucide-react";
 
 import { toast } from "@/components/ui/toast/toast";
-import { getApiErrorMessageOnUi } from "@/lib/errors/getApiErrorMessageOnUi";
+// import { getApiErrorMessageOnUi } from "@/lib/errors/getApiErrorMessageOnUi";
 import type { Blog, BlogContentNode, BlogStatus } from "@/lib/hooks/useBlogs";
 
 import BlogContentEditor from "./BlogContentEditor";
@@ -153,7 +153,7 @@ function getContentText(node: BlogContentNode): string {
   return result.trim();
 }
 
-export default function BlogForm({ blog, onSubmit, onCancel, submitting = false }: BlogFormProps) {
+function BlogFormContent({ blog, onSubmit, onCancel, submitting = false }: BlogFormProps) {
   const [form, setForm] = useState<BlogFormValues>(() => getInitialValues(blog) );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isUploading, setIsUploading] = useState(false);
@@ -163,13 +163,19 @@ export default function BlogForm({ blog, onSubmit, onCancel, submitting = false 
   const skipUnmountCleanupRef = useRef(false);
   const isEditing = Boolean(blog?.id);
   const isBusy = submitting || isUploading;
+
+
+
   // Reset the form when switching to a different blog.
-  useEffect(() => {
-    setForm(getInitialValues(blog));
-    setErrors({});
-    setImageRemoved(false);
-    setSlugTouched(Boolean(blog?.slug));
-  }, [blog]);
+  // useEffect(() => {
+  //   setForm(getInitialValues(blog));
+  //   setErrors({});
+  //   setImageRemoved(false);
+  //   setSlugTouched(Boolean(blog?.slug));
+  // }, [blog]);
+
+
+
   async function cleanupImageUrls(urls: string[]): Promise<string[]> {
     const uniqueUrls = [...new Set(urls)].filter(isLocalUpload);
     const failedUrls: string[] = [];
@@ -294,18 +300,36 @@ export default function BlogForm({ blog, onSubmit, onCancel, submitting = false 
     }
   }
   // Clean temporary uploads when leaving without saving.
+  // useEffect(() => {
+  //   return () => {
+  //     if (skipUnmountCleanupRef.current) return;
+
+  //     const urls = [...uploadedImageUrlsRef.current];
+  //     uploadedImageUrlsRef.current.clear();
+
+  //     if (urls.length) {
+  //       void cleanupImageUrls(urls);
+  //     }
+  //   };
+  // }, []);
+
+  // Clean temporary uploads when leaving without saving.
+  // Clean temporary uploads when leaving without saving.
   useEffect(() => {
+  const uploadedUrlsRef = uploadedImageUrlsRef;
+
     return () => {
       if (skipUnmountCleanupRef.current) return;
 
-      const urls = [...uploadedImageUrlsRef.current];
-      uploadedImageUrlsRef.current.clear();
+      const urls = [...uploadedUrlsRef.current];
+      uploadedUrlsRef.current.clear();
 
       if (urls.length) {
         void cleanupImageUrls(urls);
       }
     };
   }, []);
+
   function validate(): boolean {
     const nextErrors: Record<string, string> = {};
 
@@ -356,12 +380,21 @@ export default function BlogForm({ blog, onSubmit, onCancel, submitting = false 
       nextErrors.author = "Please select a valid author.";
     }
 
+    // if (
+    //   form.category &&
+    //   form.category !== "__none__" &&
+    //   !/^[a-f\d]{24}$/i.test(form.category)
+    // ) {
+    //   errors.category = "Please select a valid category.";
+    // }
+
+
     if (
       form.category &&
       form.category !== "__none__" &&
       !/^[a-f\d]{24}$/i.test(form.category)
     ) {
-      errors.category = "Please select a valid category.";
+      nextErrors.category = "Please select a valid category.";
     }
 
     const tags = form.tags
@@ -539,9 +572,16 @@ export default function BlogForm({ blog, onSubmit, onCancel, submitting = false 
       skipUnmountCleanupRef.current = true;
       await onSubmit(payload);
       await cleanupAfterSuccessfulSave(form.featuredImage.trim());
-    } catch (error: any) {
+    } catch (error: unknown) {
       skipUnmountCleanupRef.current = false;
-      const message = error instanceof Error ? error.message : getApiErrorMessageOnUi( error, isEditing ? "Unable to update blog." : "Unable to create blog." );
+
+      const message =
+        error instanceof Error
+          ? error.message
+          : isEditing
+            ? "Unable to update blog. Please try again."
+            : "Unable to create blog. Please try again.";
+
       toast.error(message);
     }
   }
@@ -1119,4 +1159,11 @@ export default function BlogForm({ blog, onSubmit, onCancel, submitting = false 
       </div>
     </form>
   );
+}
+
+
+export default function BlogForm(props: BlogFormProps) {
+  const formKey = props.blog?.id ?? "create";
+
+  return <BlogFormContent key={formKey} {...props} />;
 }

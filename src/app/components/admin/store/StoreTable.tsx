@@ -7,6 +7,8 @@ import {
   Trash2,
 } from "lucide-react";
 
+import Image from "next/image";
+
 import type { Store } from "@/lib/hooks/useStores";
 
 interface StoreTableProps {
@@ -112,9 +114,12 @@ export default function StoreTable({
                     <div className="flex min-w-[220px] items-center gap-3">
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
                         {store.logo ? (
-                          <img
+                          <Image
                             src={store.logo}
                             alt={`${store.name} logo`}
+                            width={160}
+                            height={160}
+                            sizes="40px"
                             className="h-full w-full object-contain"
                           />
                         ) : (

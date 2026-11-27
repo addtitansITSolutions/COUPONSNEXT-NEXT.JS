@@ -90,8 +90,10 @@ export default function StoreCoupons({
   const searchParams = useSearchParams();
   const queryString = searchParams.toString();
 
-  const [filters, setFilters] = useState<CouponFiltersState>(
-    () => getFiltersFromUrl(new URLSearchParams(queryString))
+  // Derive filters directly from URL parameters.
+  const filters = useMemo(
+    () => getFiltersFromUrl(new URLSearchParams(queryString)),
+    [queryString]
   );
 
   const [coupons, setCoupons] = useState<CouponItem[]>([]);
@@ -155,11 +157,11 @@ export default function StoreCoupons({
     [storeSlug, filters]
   );
 
-  useEffect(() => {
-    setFilters(
-      getFiltersFromUrl(new URLSearchParams(queryString))
-    );
-  }, [queryString]);
+  // useEffect(() => {
+  //   setFilters(
+  //     getFiltersFromUrl(new URLSearchParams(queryString))
+  //   );
+  // }, [queryString]);
 
   // Update individual filters.
   const handleFilterChange = useCallback(
@@ -205,14 +207,15 @@ export default function StoreCoupons({
     loadMoreControllerRef.current?.abort();
     loadMoreControllerRef.current = null;
 
-    setLoading(true);
-    setLoadingMore(false);
-    setError("");
-    setLoadMoreError("");
-    setCoupons([]);
-    setPagination(null);
+    const loadCoupons = async () => {
+      // Reset state when the new request starts.
+      setLoading(true);
+      setLoadingMore(false);
+      setError("");
+      setLoadMoreError("");
+      setCoupons([]);
+      setPagination(null);
 
-    const timer = window.setTimeout(async () => {
       try {
         const response = await fetch(
           `/api/public/coupons?${buildQuery(1)}`,
@@ -258,6 +261,10 @@ export default function StoreCoupons({
           setLoading(false);
         }
       }
+    };
+
+    const timer = window.setTimeout(() => {
+      void loadCoupons();
     }, 300);
 
     return () => {

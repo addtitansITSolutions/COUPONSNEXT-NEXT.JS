@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Loader2, Save, X } from "lucide-react";
 import { toast } from "@/components/ui/toast/toast";
-import { getApiErrorMessageOnUi } from "@/lib/errors/getApiErrorMessageOnUi";
+// import { getApiErrorMessageOnUi } from "@/lib/errors/getApiErrorMessageOnUi";
 import  StoreDropdown  from "./StoreDropdown";
 import  CategoryDropdown  from "./CategoryDropdown";
 import CouponImageField from "./CouponImageField";
@@ -244,14 +244,31 @@ export default function CouponForm({ coupon, onSubmit, onCancel, submitting = fa
   }
 
   // Clean up temporary uploads only when leaving without a successful save.
-  useEffect(() => {
+  // useEffect(() => {
+  //   return () => {
+  //     if (skipUnmountCleanupRef.current) {
+  //       return;
+  //     }
+
+  //     const urls = [...uploadedImageUrlsRef.current];
+  //     uploadedImageUrlsRef.current.clear();
+
+  //     if (urls.length) {
+  //       void cleanupImageUrls(urls);
+  //     }
+  //   };
+  // }, []);
+
+    useEffect(() => {
+    const uploadedUrlsRef = uploadedImageUrlsRef;
+
     return () => {
       if (skipUnmountCleanupRef.current) {
         return;
       }
 
-      const urls = [...uploadedImageUrlsRef.current];
-      uploadedImageUrlsRef.current.clear();
+      const urls = [...uploadedUrlsRef.current];
+      uploadedUrlsRef.current.clear();
 
       if (urls.length) {
         void cleanupImageUrls(urls);
@@ -392,19 +409,17 @@ export default function CouponForm({ coupon, onSubmit, onCancel, submitting = fa
       skipUnmountCleanupRef.current = true;
       await onSubmit(payload);
       await cleanupAfterSuccessfulSave(form.image.trim());
-    } catch (error : any) {
+    // } catch (error : unknown) {
+    //   skipUnmountCleanupRef.current = false;
+    //     const message = error instanceof Error
+    //       ? error.message
+    //       : isEditing
+    //         ? "Unable to update coupon. Please try again."
+    //         : "Unable to create coupon. Please try again.";
+    //   // toast.error(message);
+    // }
+    }catch{
       skipUnmountCleanupRef.current = false;
-      const message =
-        error instanceof Error
-          ? error.message
-          : getApiErrorMessageOnUi(
-              error,
-              isEditing
-                ? "Unable to update coupon."
-                : "Unable to create coupon."
-            );
-
-      // toast.error(message);
     }
   }
 

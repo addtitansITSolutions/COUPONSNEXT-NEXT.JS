@@ -132,7 +132,16 @@ export default function BlogsClient({
   );
 
   const [searchInput, setSearchInput] = useState(filters.search);
+  const [previousFilterSearch, setPreviousFilterSearch] = useState(
+    filters.search
+  );
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+
+  // Synchronize the search input when URL filters change.
+  if (filters.search !== previousFilterSearch) {
+    setPreviousFilterSearch(filters.search);
+    setSearchInput(filters.search);
+  }
 
   const activeFilters = hasActiveFilters(filters);
 
@@ -223,9 +232,9 @@ export default function BlogsClient({
 
   /* ---------- search input sync ---------- */
 
-  useEffect(() => {
-    setSearchInput(filters.search);
-  }, [filters.search]);
+  // useEffect(() => {
+  //   setSearchInput(filters.search);
+  // }, [filters.search]);
 
   useEffect(() => {
     if (searchInput === filters.search) return;
@@ -305,10 +314,19 @@ export default function BlogsClient({
   }, [queryString]);
 
   useEffect(() => {
-    fetchBlogs();
+    const timeout = window.setTimeout(() => {
+      void fetchBlogs();
+    }, 0);
 
     return () => {
+      window.clearTimeout(timeout);
+
       initialControllerRef.current?.abort();
+
+      loadMoreControllerRef.current?.abort();
+      loadMoreControllerRef.current = null;
+
+      loadingMoreRef.current = false;
     };
   }, [fetchBlogs]);
 

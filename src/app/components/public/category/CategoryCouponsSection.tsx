@@ -433,61 +433,6 @@ export default function CategoryCouponsSection({
   const isPaused = useRef(false);
   const isResetting = useRef(false);
 
-  // Fetch only the first 8 coupons from this category.
-  // const fetchCategoryCoupons = useCallback(async () => {
-  //   const controller = new AbortController();
-
-  //   setLoading(true);
-  //   setError("");
-  //   setCoupons([]);
-  //   setActiveIndex(0);
-  //   currentIndex.current = 0;
-
-  //   try {
-  //     const params = new URLSearchParams({
-  //       category: categorySlug,
-  //       page: "1",
-  //       limit: String(PAGE_LIMIT),
-  //       sort: "popular",
-  //     });
-
-  //     const response = await fetch(
-  //       `/api/public/coupons?${params.toString()}`,
-  //       {
-  //         method: "GET",
-  //         cache: "no-store",
-  //         signal: controller.signal,
-  //       }
-  //     );
-
-  //     const result = (await response.json()) as CouponsApiResponse;
-
-  //     if (!response.ok || !result.success) {
-  //       throw new Error(
-  //         result.message ||
-  //           result.error ||
-  //           "Failed to load category coupons."
-  //       );
-  //     }
-
-  //     setCoupons(result.coupons ?? []);
-  //   } catch (err) {
-  //     if (err instanceof Error && err.name === "AbortError") {
-  //       return;
-  //     }
-
-  //     setError(
-  //       err instanceof Error
-  //         ? err.message
-  //         : "Something went wrong while loading coupons."
-  //     );
-  //   } finally {
-  //     setLoading(false);
-  //   }
-
-  //   return () => controller.abort();
-  // }, [categorySlug]);
-
   useEffect(() => {
     let isCurrentRequest = true;
     const controller = new AbortController();
@@ -678,17 +623,17 @@ export default function CategoryCouponsSection({
   }, [coupons.length, nextSlide]);
 
   // Reset carousel when category changes.
-  useEffect(() => {
-    currentIndex.current = 0;
-    setActiveIndex(0);
+  // useEffect(() => {
+  //   currentIndex.current = 0;
+  //   setActiveIndex(0);
 
-    if (carouselRef.current) {
-      carouselRef.current.scrollTo({
-        left: 0,
-        behavior: "instant",
-      });
-    }
-  }, [categorySlug, coupons.length]);
+  //   if (carouselRef.current) {
+  //     carouselRef.current.scrollTo({
+  //       left: 0,
+  //       behavior: "instant",
+  //     });
+  //   }
+  // }, [categorySlug, coupons.length]);
 
   if (loading) {
     return null;

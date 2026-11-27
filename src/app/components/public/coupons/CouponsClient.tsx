@@ -253,6 +253,80 @@ export default function CouponsClient({
     router.push(pathname, { scroll: false });
   }, [pathname, router]);
 
+  // // Fetch the first page whenever URL filters change.
+  // useEffect(() => {
+  //   const controller = new AbortController();
+  //   let isCurrentRequest = true;
+
+  //   // Cancel any ongoing pagination request.
+  //   loadingMoreRef.current = false;
+  //   loadMoreControllerRef.current?.abort();
+  //   loadMoreControllerRef.current = null;
+
+  //   setLoading(true);
+  //   setLoadingMore(false);
+  //   setError("");
+  //   setLoadMoreError("");
+  //   setCoupons([]);
+  //   setPagination(null);
+
+  //   const timer = window.setTimeout(async () => {
+  //     try {
+  //       const response = await fetch(
+  //         `/api/public/coupons?${buildQuery(1)}`,
+  //         {
+  //           method: "GET",
+  //           cache: "no-store",
+  //           signal: controller.signal,
+  //         }
+  //       );
+
+  //       const result =
+  //         (await response.json()) as CouponsApiResponse;
+
+  //       if (!response.ok || !result.success) {
+  //         throw new Error(
+  //           result.message ||
+  //             result.error ||
+  //             "Failed to load coupons."
+  //         );
+  //       }
+
+  //       if (!isCurrentRequest) return;
+
+  //       setCoupons(result.coupons ?? []);
+  //       setPagination(result.pagination ?? null);
+  //     } catch (err) {
+  //       if (
+  //         err instanceof Error &&
+  //         err.name === "AbortError"
+  //       ) {
+  //         return;
+  //       }
+
+  //       if (!isCurrentRequest) return;
+
+  //       setError(
+  //         err instanceof Error
+  //           ? err.message
+  //           : "Something went wrong while loading coupons."
+  //       );
+  //     } finally {
+  //       if (isCurrentRequest) {
+  //         setLoading(false);
+  //       }
+  //     }
+  //   }, 300);
+
+  //   return () => {
+  //     isCurrentRequest = false;
+  //     window.clearTimeout(timer);
+  //     controller.abort();
+  //   };
+  // }, [buildQuery, retryKey]);
+
+
+
   // Fetch the first page whenever URL filters change.
   useEffect(() => {
     const controller = new AbortController();
@@ -263,14 +337,20 @@ export default function CouponsClient({
     loadMoreControllerRef.current?.abort();
     loadMoreControllerRef.current = null;
 
-    setLoading(true);
-    setLoadingMore(false);
-    setError("");
-    setLoadMoreError("");
-    setCoupons([]);
-    setPagination(null);
+    // Reset UI state asynchronously.
+    const resetTimer = window.setTimeout(() => {
+      if (!isCurrentRequest) return;
 
-    const timer = window.setTimeout(async () => {
+      setLoading(true);
+      setLoadingMore(false);
+      setError("");
+      setLoadMoreError("");
+      setCoupons([]);
+      setPagination(null);
+    }, 0);
+
+    // Preserve the existing 300ms request debounce.
+    const fetchTimer = window.setTimeout(async () => {
       try {
         const response = await fetch(
           `/api/public/coupons?${buildQuery(1)}`,
@@ -320,7 +400,10 @@ export default function CouponsClient({
 
     return () => {
       isCurrentRequest = false;
-      window.clearTimeout(timer);
+
+      window.clearTimeout(resetTimer);
+      window.clearTimeout(fetchTimer);
+
       controller.abort();
     };
   }, [buildQuery, retryKey]);

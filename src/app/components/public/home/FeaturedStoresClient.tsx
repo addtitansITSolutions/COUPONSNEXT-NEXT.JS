@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useRef } from "react";
@@ -12,6 +11,8 @@ import {
 } from "lucide-react";
 import { motion, useReducedMotion, type Variants } from "framer-motion";
 import FeaturedStoresBackground from "./FeaturedStoresBackground";
+
+import Image from "next/image";
 
 export interface FeaturedStoreItem {
   id: string;
@@ -161,10 +162,12 @@ export default function FeaturedStoresClient({
                       className="flex h-[64px] w-[64px] items-center justify-center overflow-hidden rounded-2xl border border-black/5 bg-white p-2 shadow-inner sm:h-[72px] sm:w-[72px]"
                     >
                       {store.logo ? (
-                        <img
+                        <Image
                           src={store.logo}
                           alt={`${store.name} logo`}
-                          loading="lazy"
+                          width={288}
+                          height={288}
+                          sizes="(max-width: 639px) 48px, 56px"
                           className="h-full w-full object-contain"
                         />
                       ) : (

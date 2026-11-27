@@ -25,7 +25,48 @@ function validateCouponId(id: string) {
   }
 }
 
-function couponResponse(coupon: any) {
+interface PopulatedCoupon {
+  _id: {
+    toString(): string;
+  };
+  title: string;
+  slug: string;
+  description?: string;
+  type: "code" | "deal";
+  code?: string;
+  image?: string;
+  store: {
+    _id: {
+      toString(): string;
+    };
+    name: string;
+    slug: string;
+    logo?: string;
+    storeBanner?: string;
+    isActive: boolean;
+  } | null;
+  category: {
+    _id: {
+      toString(): string;
+    };
+    name: string;
+    slug: string;
+  } | null;
+  discount?: string;
+  affiliateUrl: string;
+  country: string;
+  startsAt?: Date;
+  expiresAt?: Date;
+  status: string;
+  isActive: boolean;
+  isFeatured: boolean;
+  isVerified: boolean;
+  sortOrder: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+function couponResponse(coupon: PopulatedCoupon) {
   const store = coupon.store;
   const category = coupon.category;
 
@@ -69,10 +110,11 @@ function couponResponse(coupon: any) {
   };
 }
 
-async function populateCoupon(id: string) {
+async function populateCoupon(id: string): Promise<PopulatedCoupon | null> {
   return Coupon.findById(id)
     .populate("store", "name slug logo storeBanner isActive")
-    .populate("category", "name slug");
+    .populate("category", "name slug")
+    .lean<PopulatedCoupon>();
 }
 
 // GET /api/admin/coupons/[id]

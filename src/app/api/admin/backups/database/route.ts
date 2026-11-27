@@ -21,7 +21,7 @@ function createMongoDump(
     const mongodumpPath = process.env.MONGODUMP_PATH || "mongodump";
 
     const dumpProcess = spawn(
-      mongodumpPath,
+      /*turbopackIgnore: true*/ mongodumpPath,
       [
         `--uri=${mongodbUri}`,
         `--archive=${archivePath}`,

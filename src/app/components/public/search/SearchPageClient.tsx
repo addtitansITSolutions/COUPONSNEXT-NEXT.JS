@@ -117,6 +117,14 @@ export default function SearchPageClient({
   const requestRef = useRef<AbortController | null>(null);
 
   const [query, setQuery] = useState(initialQuery);
+  const [previousInitialQuery, setPreviousInitialQuery] =
+    useState(initialQuery);
+
+  // Update the input when the URL query changes.
+  if (initialQuery !== previousInitialQuery) {
+    setPreviousInitialQuery(initialQuery);
+    setQuery(initialQuery);
+  }
   const [results, setResults] = useState<SearchResults>(EMPTY_RESULTS);
   const [counts, setCounts] = useState(EMPTY_COUNTS);
   const [isLoading, setIsLoading] = useState(false);
@@ -194,24 +202,49 @@ export default function SearchPageClient({
     }
   }, []);
 
-  // Synchronize the input and results with the URL query.
+  // // Synchronize the input and results with the URL query.
+  // useEffect(() => {
+  //   const trimmedQuery = initialQuery.trim();
+
+  //   setQuery(initialQuery);
+
+  //   if (trimmedQuery.length >= MIN_QUERY_LENGTH) {
+  //     search(trimmedQuery);
+  //   } else {
+  //     requestRef.current?.abort();
+  //     setResults(EMPTY_RESULTS);
+  //     setCounts(EMPTY_COUNTS);
+  //     setHasSearched(false);
+  //     setIsLoading(false);
+  //     setError("");
+  //   }
+
+  //   return () => {
+  //     requestRef.current?.abort();
+  //   };
+  // }, [initialQuery, search]);
+
+
+
+  // Fetch results when the URL query changes.
   useEffect(() => {
     const trimmedQuery = initialQuery.trim();
 
-    setQuery(initialQuery);
-
-    if (trimmedQuery.length >= MIN_QUERY_LENGTH) {
-      search(trimmedQuery);
-    } else {
-      requestRef.current?.abort();
-      setResults(EMPTY_RESULTS);
-      setCounts(EMPTY_COUNTS);
-      setHasSearched(false);
-      setIsLoading(false);
-      setError("");
-    }
+    const timeout = window.setTimeout(() => {
+      if (trimmedQuery.length >= MIN_QUERY_LENGTH) {
+        void search(trimmedQuery);
+      } else {
+        requestRef.current?.abort();
+        setResults(EMPTY_RESULTS);
+        setCounts(EMPTY_COUNTS);
+        setHasSearched(false);
+        setIsLoading(false);
+        setError("");
+      }
+    }, 0);
 
     return () => {
+      window.clearTimeout(timeout);
       requestRef.current?.abort();
     };
   }, [initialQuery, search]);
